@@ -21,10 +21,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+    private static final int Reques_Code=101;
     Location mlocation;
     FusedLocationProviderClient fusedLocationProviderClient;
-    private static final int Reques_Code=101;
     private GoogleMap mMap;
+    float zoomLevel = 16.0f;
 
 
     @Override
@@ -57,7 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         LatLng latLng = new LatLng(mlocation.getLatitude() , mlocation.getLongitude());
         mMap.addMarker(new MarkerOptions().position(latLng).title("Current Location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
     }
 
     @Override
