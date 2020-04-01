@@ -7,8 +7,11 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.Toast;
-
+import java.util.ArrayList;
+import java.util.List;
 import com.example.autopark.R;
+import com.example.autopark.model.GeoPoint;
+import com.example.autopark.model.User;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -19,6 +22,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final int Reques_Code=101;
@@ -32,6 +39,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         GetlastLocation();
 
@@ -60,17 +68,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(latLng).title("Current Location"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
-            case Reques_Code:
-                if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    GetlastLocation();
-                }
-                break;
-        }
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        switch (requestCode){
+//            case Reques_Code:
+//                if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+//                    GetlastLocation();
+//                }
+//                break;
+//        }
+//    }
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
