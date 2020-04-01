@@ -65,7 +65,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             for (DocumentSnapshot d : list) {
                                Log.d("data " , String.valueOf(d.getData()));
 
-//                                Toast.makeText(getApplicationContext() , "hello",Toast.LENGTH_SHORT).show();
 
 
 
