@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "412731480338-vbtq039eriats7k7c39ns5gp0jm521t7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.autopark",
+            "certificate_hash": "ea5f3f229183f45f60b3aa7bbaaa43372ac8eb4a"
+          }
+        },
+        {
           "client_id": "412731480338-bcagaj18mc54ak10ufc7rjidjk8c1e6a.apps.googleusercontent.com",
           "client_type": 3
         }

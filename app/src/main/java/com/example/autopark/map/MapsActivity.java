@@ -1,17 +1,17 @@
 package com.example.autopark.map;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.fragment.app.FragmentActivity;
 
-import android.content.pm.PackageManager;
-import android.content.res.Resources;
+
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.example.autopark.R;
+
+import com.example.autopark.model.Parking;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -19,43 +19,64 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
-    private static final int Reques_Code = 101;
+import java.util.List;
+
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+    private static final int Reques_Code=101;
     Location mlocation;
     FusedLocationProviderClient fusedLocationProviderClient;
     private GoogleMap mMap;
-    float zoomLevel = 16.0f;
-    private final String TAG = "MapTag";
+    float mZoomLevel = 16.0f;
+
+    private FirebaseFirestore mFstore;
+    Parking park;
+    private List<Parking> parking;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        mFstore = FirebaseFirestore.getInstance();
+
+        mFstore.collection("parking").get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                        if (!queryDocumentSnapshots.isEmpty()) {
+
+                            List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
+
+                            for (DocumentSnapshot d : list) {
+                               Log.d("data " , String.valueOf(d.getData()));
+                            }
+                        }
+                    }
+                });
+
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        getLastLocation();
-        Log.d(TAG, "OnCreate");
-        fillAvailableParking();
+        GetlastLocation();
+
     }
 
-    private void getLastLocation() {
+    private void GetlastLocation() {
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 if (location != null){
                     mlocation = location;
-                    Toast.makeText(getApplicationContext() , mlocation.getLatitude() + " " + mlocation.getLongitude(),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext() , mlocation.getLatitude()+""+mlocation.getLongitude(),Toast.LENGTH_SHORT).show();
                     SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
                             .findFragmentById(R.id.map);
                     supportMapFragment.getMapAsync(MapsActivity.this);
@@ -67,58 +88,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        try {
-            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.customer_map));
-        } catch (Resources.NotFoundException e)
-        {
-            Log.e(TAG, "Can't find style. Error: ", e);
-        }
-
         LatLng latLng = new LatLng(mlocation.getLatitude() , mlocation.getLongitude());
         mMap.addMarker(new MarkerOptions().position(latLng).title("Current Location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, mZoomLevel));
 
-        fillAvailableParking();
-        Log.d(TAG, "onMapReady ");
 
     }
-
-    private void fillAvailableParking()
-    {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Log.d(TAG, "fillAvailableParking ");
-
-        db.collection("parking").get().addOnCompleteListener( new OnCompleteListener<QuerySnapshot>() {
-
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task)
-            {
-                if (task.isSuccessful())
-                {
-                    for (QueryDocumentSnapshot document : task.getResult())
-                    {
-                            Log.d(TAG, document.getId() + " => " + document.getData());
-                    }
-                }
-                else
-                {
-                    Log.d(TAG, "Failed: ", task.getException());
-                }
-            }
-        });
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
-            case Reques_Code:
-                if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    getLastLocation();
-                }
-                break;
-        }
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        switch (requestCode){
+//            case Reques_Code:
+//                if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+//                    GetlastLocation();
+//                }
+//                break;
+//        }
+//    }
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
