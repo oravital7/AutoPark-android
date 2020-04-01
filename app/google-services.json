@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "412731480338",
+    "firebase_url": "https://autopark-e1d43.firebaseio.com",
+    "project_id": "autopark-e1d43",
+    "storage_bucket": "autopark-e1d43.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412731480338:android:ee5ef6dadcdab93bb83bcb",
+        "android_client_info": {
+          "package_name": "com.example.autopark"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "412731480338-bcagaj18mc54ak10ufc7rjidjk8c1e6a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtSVTdz1IJZoINnue_gUivl0P6I4Z1yik"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "412731480338-bcagaj18mc54ak10ufc7rjidjk8c1e6a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
