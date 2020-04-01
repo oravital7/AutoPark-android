@@ -73,7 +73,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
-            public void onSuccess(Location location) {
+            public void onSuccess(Location location)  {
                 if (location != null){
                     mlocation = location;
                     Toast.makeText(getApplicationContext() , mlocation.getLatitude()+""+mlocation.getLongitude(),Toast.LENGTH_SHORT).show();
