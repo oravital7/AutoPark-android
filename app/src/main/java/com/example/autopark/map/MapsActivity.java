@@ -1,15 +1,19 @@
 package com.example.autopark.map;
 
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
 
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.example.autopark.MainActivity;
 import com.example.autopark.R;
 
+import com.example.autopark.model.Parking;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -18,8 +22,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.List;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -29,11 +41,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     float zoomLevel = 16.0f;
 
+    private FirebaseFirestore mFstore;
+    Parking park;
+    private List<Parking> parking;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        mFstore = FirebaseFirestore.getInstance();
+
+        mFstore.collection("parking").get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                        if (!queryDocumentSnapshots.isEmpty()) {
+
+                            List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
+
+                            for (DocumentSnapshot d : list) {
+                               Log.d("data " , String.valueOf(d.getData()));
+
+//                                Toast.makeText(getApplicationContext() , "hello",Toast.LENGTH_SHORT).show();
+
+
+
+                            }
+                        }
+                    }
+                });
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         GetlastLocation();
@@ -62,6 +101,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng latLng = new LatLng(mlocation.getLatitude() , mlocation.getLongitude());
         mMap.addMarker(new MarkerOptions().position(latLng).title("Current Location"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
+
+
     }
 //    @Override
 //    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

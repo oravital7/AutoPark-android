@@ -1,41 +1,47 @@
 package com.example.autopark;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.autopark.model.Parking;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
-    private FirebaseFirestore mFstore;
-    Parking park;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mFstore = FirebaseFirestore.getInstance();
-        mFstore.collection("parking").get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if(!queryDocumentSnapshots.isEmpty()){
-                            List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
-                            for (DocumentSnapshot d : list){
-                                park = d.toObject(Parking.class);
-                                Toast toast = Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT);
-                                toast.show();
-                            }
-                        }
-                    }
-                });
+
+//
+//
+//        mFstore.collection("parking").get()
+//                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+//                        if(!queryDocumentSnapshots.isEmpty()){
+//                            List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
+//                            for (DocumentSnapshot d : list){
+//                                park = d.toObject(Parking.class);
+//                                Toast toast = Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT);
+//                                toast.show();
+//                            }
+//                        }
+//                    }
+//                });
 
 
 

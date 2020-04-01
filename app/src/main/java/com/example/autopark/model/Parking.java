@@ -30,9 +30,7 @@ public class Parking {
         Geom = geom;
     }
 
-    public Timestamp getData() {
-        return data;
-    }
+    public Timestamp getData() { return data; }
 
     public void setData(Timestamp data) {
         this.data = data;
@@ -53,4 +51,5 @@ public class Parking {
     public void setID(String ID) {
         this.ID = ID;
     }
+
 }
