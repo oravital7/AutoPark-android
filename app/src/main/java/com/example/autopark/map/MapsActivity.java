@@ -1,17 +1,15 @@
 package com.example.autopark.map;
 
-import androidx.annotation.NonNull;
+
 import androidx.fragment.app.FragmentActivity;
 
-import android.content.pm.PackageManager;
+
 import android.location.Location;
 import android.os.Bundle;
 import android.widget.Toast;
-import java.util.ArrayList;
-import java.util.List;
+
 import com.example.autopark.R;
-import com.example.autopark.model.GeoPoint;
-import com.example.autopark.model.User;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -22,10 +20,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final int Reques_Code=101;
