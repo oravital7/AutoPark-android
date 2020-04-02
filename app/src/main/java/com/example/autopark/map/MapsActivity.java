@@ -11,7 +11,12 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SearchView;
+import android.widget.Toast;
+
 import com.example.autopark.R;
 import com.example.autopark.model.Parking;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -45,6 +50,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FirebaseFirestore mFstore;
     private Parking mPark;
     private List<Parking> mParking;
+    private ImageView mGps;
 
 
 
@@ -54,6 +60,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         mFstore = FirebaseFirestore.getInstance();
         mSearchView = (SearchView) findViewById(R.id.location);
+        mGps = (ImageView)findViewById(R.id.ic_gps);
         mParking = new ArrayList<>();
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -61,58 +68,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     supportMapFragment.getMapAsync(MapsActivity.this);
     }
 
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (mLocation != null)
-            mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-//        GeoPoint geoPoint = new GeoPoint(mLocation.getLatitude(), mLocation.getLongitude());
-//        try {
-//            mMap.addMarker(new MarkerOptions().position(mCurrentLocation).title(getAddressName(geoPoint)).snippet("Current Location"));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-        mMap.setMyLocationEnabled(true);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
-        connectToDatabase();
+        getDeviceLocation();
+        mGps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getDeviceLocation();
+            }
+        });
         searchView();
-    }
-    public void connectToDatabase(){
-        mFstore.collection("parking").get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if (!queryDocumentSnapshots.isEmpty()) {
-                            List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
-                            for (DocumentSnapshot d : list) {
-                                mPark = d.toObject(Parking.class);
-                                Log.d("Geom " , String.valueOf(mPark.getGeom()));
-                                mParking.add(mPark);
-                            }
-                            for (Parking p : mParking){
-                                if(p.getGeom()!=null) {
-                                    LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
-                                    try {
-                                        mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
     }
 
     public void searchView(){
@@ -128,10 +95,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    Address address = addressList.get(0);
-                    LatLng latLng = new LatLng(address.getLatitude() , address.getLongitude());
-                    mMap.addMarker(new MarkerOptions().position(latLng).title(location));
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , mZoomLevel));
+                    if(addressList.size() > 0) {
+                        Address address = addressList.get(0);
+                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+                        mMap.addMarker(new MarkerOptions().position(latLng).title(location));
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, mZoomLevel));
+                    }
                 }
                 return false;
             }
@@ -140,6 +109,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return false;
             }
         });
+    }
+    public void getDeviceLocation(){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if (mLocation != null)
+            mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+        mMap.setMyLocationEnabled(true);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
     }
     public String getAddressName(GeoPoint geoPoint) throws IOException {
         List<Address> addressList = null;
@@ -150,23 +136,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         return  address;
     }
-    public void addDataToDataBase(){
-        Timestamp time = Timestamp.now();
-        GeoPoint p1 = new GeoPoint(32.0923952,34.9691267);
-        GeoPoint p2 = new GeoPoint(32.0910606,34.9689872);
-        GeoPoint p3 = new GeoPoint(32.0908038,34.9669221);
-        GeoPoint p4 = new GeoPoint(32.0901877,34.9657993);
-        double size = 12;
-        double size1 = 10;
-        double size3 = 9;
-        double size4 = 11;
-        String user1 = "2a";
-        String user2 = "3a";
-        Parking park2 = new Parking(time,p2,size1,user1);
-        Parking park3 = new Parking(time,p3,size3,user2);
-        Parking park4 = new Parking(time,p4,size4,user2);
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -185,16 +154,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 for (Parking p : mParking){
                     if(p.getGeom()!=null) {
-                        LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
-                        try {
-                            mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                        if(calculateRadius(p.getGeom())) {
+                            LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
+                            try {
+                                mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
                         }
                     }
                 }
             }
         });
+    }
+    public Boolean calculateRadius(GeoPoint geoPoint){
+        Location locationA = new Location("A");
+        locationA.setLatitude(geoPoint.getLatitude());
+        locationA.setLongitude(geoPoint.getLongitude());
+        float dis = mLocation.distanceTo(locationA);
+        Log.d("distant " , String.valueOf(dis));
+        if(dis > 5000) {
+            return false;
+        }
+        else
+            return true;
     }
     /**
      * Manipulates the map once available.
