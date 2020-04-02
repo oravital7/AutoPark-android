@@ -1,12 +1,13 @@
 package com.example.autopark.model;
 
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 
-import java.sql.Timestamp;
+
 
 public class Parking {
-    private Timestamp data;
+    private Timestamp date;
     private GeoPoint Geom;
     private double size;
     private String ID;
@@ -14,8 +15,8 @@ public class Parking {
     public Parking(){
 
     }
-    public Parking(Timestamp data ,GeoPoint Geom , double size , String ID){
-        this.data = data;
+    public Parking(Timestamp date ,GeoPoint Geom , double size , String ID){
+        this.date = date;
         this.Geom = Geom;
         this.size = size;
         this.ID = ID;
@@ -30,10 +31,10 @@ public class Parking {
         Geom = geom;
     }
 
-    public Timestamp getData() { return data; }
+    public Timestamp getDate() { return date; }
 
-    public void setData(Timestamp data) {
-        this.data = data;
+    public void setDate(Timestamp date) {
+        this.date = date;
     }
 
     public double getSize() {
