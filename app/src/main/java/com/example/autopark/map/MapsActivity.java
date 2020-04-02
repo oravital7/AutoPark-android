@@ -1,12 +1,17 @@
 package com.example.autopark.map;
 
 
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.SearchView;
@@ -37,17 +42,18 @@ import java.util.List;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-    private static final int Reques_Code=101;
+    private static final int Reques_Code = 101;
     private Location mLocation;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private GoogleMap mMap;
     float mZoomLevel = 16.0f;
     private SearchView mSearchView;
+    private LatLng mCurrentLocation;
+    private LocationManager mLocationManager;
 
     private FirebaseFirestore mFstore;
     private Parking mPark;
     private List<Parking> mParking;
-
 
 
     @Override
@@ -55,34 +61,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         mFstore = FirebaseFirestore.getInstance();
-        mSearchView =(SearchView)findViewById(R.id.location);
+        mSearchView = (SearchView) findViewById(R.id.location);
         mParking = new ArrayList<>();
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        getlastLocation();
-    }
-
-    private void getlastLocation() {
-        Task<Location> task = mFusedLocationProviderClient.getLastLocation();
-        task.addOnSuccessListener(new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                if (location != null){
-                    mLocation = location;
-                    Toast.makeText(getApplicationContext() , mLocation.getLatitude()+""+ mLocation.getLongitude(),Toast.LENGTH_SHORT).show();
-                    SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
                             .findFragmentById(R.id.map);
                     supportMapFragment.getMapAsync(MapsActivity.this);
-                }
-            }
-        });
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        LatLng latLng = new LatLng(mLocation.getLatitude() , mLocation.getLongitude());
-        mMap.addMarker(new MarkerOptions().position(latLng).title("Current Location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, mZoomLevel));
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if (mLocation != null)
+            mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+
+        mMap.addMarker(new MarkerOptions().position(mCurrentLocation).title("Current Location"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
         connectToDatabase();
         searchView();
     }
@@ -108,6 +113,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 });
     }
+
     public void searchView(){
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
