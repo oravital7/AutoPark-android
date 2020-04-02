@@ -11,7 +11,12 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SearchView;
+import android.widget.Toast;
+
 import com.example.autopark.R;
 import com.example.autopark.model.Parking;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -45,6 +50,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FirebaseFirestore mFstore;
     private Parking mPark;
     private List<Parking> mParking;
+    private ImageView mGps;
 
 
 
@@ -54,6 +60,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         mFstore = FirebaseFirestore.getInstance();
         mSearchView = (SearchView) findViewById(R.id.location);
+        mGps = (ImageView)findViewById(R.id.ic_gps);
         mParking = new ArrayList<>();
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -64,27 +71,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (mLocation != null)
-            mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-//        GeoPoint geoPoint = new GeoPoint(mLocation.getLatitude(), mLocation.getLongitude());
-//        try {
-//            mMap.addMarker(new MarkerOptions().position(mCurrentLocation).title(getAddressName(geoPoint)).snippet("Current Location"));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-        mMap.setMyLocationEnabled(true);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
+        getDeviceLocation();
+        mGps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getDeviceLocation();
+            }
+        });
         connectToDatabase();
         searchView();
     }
@@ -128,11 +121,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    Address address = addressList.get(0);
-                    LatLng latLng = new LatLng(address.getLatitude() , address.getLongitude());
-                    mMap.addMarker(new MarkerOptions().position(latLng).title(location));
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , mZoomLevel));
+                    if(addressList.size() > 0) {
+                        Address address = addressList.get(0);
+                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+                        mMap.addMarker(new MarkerOptions().position(latLng).title(location));
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, mZoomLevel));
+                    }
                 }
+
                 return false;
             }
             @Override
@@ -140,6 +136,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return false;
             }
         });
+    }
+    public void getDeviceLocation(){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if (mLocation != null)
+            mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+//        GeoPoint geoPoint = new GeoPoint(mLocation.getLatitude(), mLocation.getLongitude());
+//        try {
+//            mMap.addMarker(new MarkerOptions().position(mCurrentLocation).title(getAddressName(geoPoint)).snippet("Current Location"));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        mMap.setMyLocationEnabled(true);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
     }
     public String getAddressName(GeoPoint geoPoint) throws IOException {
         List<Address> addressList = null;
