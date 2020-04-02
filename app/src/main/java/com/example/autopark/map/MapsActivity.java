@@ -1,4 +1,5 @@
 package com.example.autopark.map;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 import android.Manifest;
@@ -21,8 +22,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 import java.io.IOException;
@@ -161,6 +165,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Parking park2 = new Parking(time,p2,size1,user1);
         Parking park3 = new Parking(time,p3,size3,user2);
         Parking park4 = new Parking(time,p4,size4,user2);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mFstore.collection("parking").addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+                if (e != null) {
+                    return;
+                }
+                mParking.clear();
+                for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
+                    DocumentSnapshot documentSnapshot = dc.getDocument();
+                    mPark = documentSnapshot.toObject(Parking.class);
+                    Log.d("Geom " , String.valueOf(mPark.getGeom()));
+                    mParking.add(mPark);
+                }
+                for (Parking p : mParking){
+                    if(p.getGeom()!=null) {
+                        LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
+                        try {
+                            mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
     }
     /**
      * Manipulates the map once available.
