@@ -4,9 +4,12 @@ package com.example.autopark.map;
 import androidx.fragment.app.FragmentActivity;
 
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.example.autopark.R;
@@ -28,6 +31,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +42,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private GoogleMap mMap;
     float mZoomLevel = 16.0f;
+    private SearchView mSearchView;
 
     private FirebaseFirestore mFstore;
     private Parking mPark;
@@ -50,6 +55,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         mFstore = FirebaseFirestore.getInstance();
+        mSearchView =(SearchView)findViewById(R.id.location);
         mParking = new ArrayList<>();
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         getlastLocation();
@@ -78,6 +84,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(latLng).title("Current Location"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, mZoomLevel));
         connectToDatabase();
+        searchView();
     }
     public void connectToDatabase(){
         mFstore.collection("parking").get()
@@ -100,6 +107,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     }
                 });
+    }
+    public void searchView(){
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                String location = mSearchView.getQuery().toString();
+                List<Address> addressList = null;
+                if(location != null || !location.equals("")){
+                    Geocoder geocoder = new Geocoder(MapsActivity.this);
+                    try {
+                        addressList = geocoder.getFromLocationName(location , 1);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Address address = addressList.get(0);
+                    LatLng latLng = new LatLng(address.getLatitude() , address.getLongitude());
+                    mMap.addMarker(new MarkerOptions().position(latLng).title(location));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , mZoomLevel));
+                }
+                return false;
+            }
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
     }
     public void addDataToDataBase(){
         Timestamp time = Timestamp.now();
