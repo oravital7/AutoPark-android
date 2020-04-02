@@ -12,7 +12,6 @@ import android.widget.Toast;
 import com.example.autopark.R;
 import com.example.autopark.model.User;
 import com.example.autopark.utils.ValidationData;
-import com.google.android.gms.common.util.NumberUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -77,18 +76,18 @@ public class RegistrationActivity extends AppCompatActivity {
         EditText password = findViewById(R.id.password);
 
         boolean isValid = true;
-//        if (!ValidationData.validEmptyStr(firstName))
-//            isValid = false;
-//        if (!ValidationData.validEmptyStr(lastName))
-//            isValid = false;
-//        if (!ValidationData.validLocation(country, city, street, houseNumber, this))
-//            isValid = false;
-//        if (!ValidationData.validPhoneNumber(phoneNumber))
-//            isValid = false;
-//        if (!ValidationData.validPassword(password))
-//            isValid = false;
-//        if (!ValidationData.validEmail(email))
-//            isValid = false;
+        if (!ValidationData.validEmptyStr(firstName))
+            isValid = false;
+        if (!ValidationData.validEmptyStr(lastName))
+            isValid = false;
+        if (!ValidationData.validLocation(country, city, street, houseNumber, this))
+            isValid = false;
+        if (!ValidationData.validPhoneNumber(phoneNumber))
+            isValid = false;
+        if (!ValidationData.validPassword(password))
+            isValid = false;
+        if (!ValidationData.validEmail(email))
+            isValid = false;
 
         if (!isValid)
             return false;
