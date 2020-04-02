@@ -86,7 +86,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public boolean onQueryTextSubmit(String query) {
                 String location = mSearchView.getQuery().toString();
                 List<Address> addressList = null;
-                if(location != null || !location.equals("")){
+                if(!location.isEmpty()){
                     Geocoder geocoder = new Geocoder(MapsActivity.this);
                     try {
                         addressList = geocoder.getFromLocationName(location , 1);
@@ -109,7 +109,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
     public void getDeviceLocation(){
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -119,6 +121,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
+
         mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (mLocation != null)
             mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
@@ -152,13 +155,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 for (Parking p : mParking){
                     if(p.getGeom()!=null) {
-                        if(calculateRadius(p.getGeom())) {
+//                        if(calculateRadius(p.getGeom())) {
                             LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
                             try {
                                 mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
                             } catch (IOException e1) {
                                 e1.printStackTrace();
-                            }
+//                            }
                         }
                     }
                 }

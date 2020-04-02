@@ -1,15 +1,13 @@
 package com.example.autopark;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
-import com.example.autopark.map.MapsActivity;
-
+import com.example.autopark.login.LoginActivity;
+import com.example.autopark.login.RegistrationActivity;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -17,11 +15,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_entrance);
     }
 
-    public void mapHandlerBtn(View v)
-    {
-        startActivity(new Intent(this, MapsActivity.class));
-    }
+    public void signInHandler(View v) { startActivity(new Intent(this, LoginActivity.class)); }
+
+    public void signUpInHandler(View v) { startActivity(new Intent(this, RegistrationActivity.class)); }
+
 }

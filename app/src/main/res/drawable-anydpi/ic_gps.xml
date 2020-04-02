@@ -3,11 +3,8 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24"
-<<<<<<< HEAD
-    android:tint="#727075"
-=======
+
     android:tint="#2F5FDE"
->>>>>>> Orabu
     android:alpha="0.8">
     <path
         android:fillColor="#FF000000"
