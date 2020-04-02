@@ -68,6 +68,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     supportMapFragment.getMapAsync(MapsActivity.this);
     }
 
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -107,6 +108,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 });
     }
+
 
     public void searchView(){
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
