@@ -40,16 +40,16 @@ import java.util.List;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+    private float mZoomLevel = 16.0f;
     private Location mLocation;
     private GoogleMap mMap;
-    float mZoomLevel = 16.0f;
+
     private SearchView mSearchView;
     private LatLng mCurrentLocation;
     private LocationManager mLocationManager;
 
     private FirebaseFirestore mFstore;
     private Parking mPark;
-    private List<Parking> mParking;
     private ImageView mGps;
 
 
@@ -61,7 +61,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mFstore = FirebaseFirestore.getInstance();
         mSearchView = (SearchView) findViewById(R.id.location);
         mGps = (ImageView)findViewById(R.id.ic_gps);
-        mParking = new ArrayList<>();
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
                             .findFragmentById(R.id.map);
@@ -88,7 +87,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public boolean onQueryTextSubmit(String query) {
                 String location = mSearchView.getQuery().toString();
                 List<Address> addressList = null;
-                if(location != null || !location.equals("")){
+                if(!location.equals("")){
                     Geocoder geocoder = new Geocoder(MapsActivity.this);
                     try {
                         addressList = geocoder.getFromLocationName(location , 1);
@@ -111,7 +110,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
     public void getDeviceLocation(){
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -145,33 +146,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (e != null) {
                     return;
                 }
-                mParking.clear();
                 for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
                     DocumentSnapshot documentSnapshot = dc.getDocument();
                     mPark = documentSnapshot.toObject(Parking.class);
-                    Log.d("Geom " , String.valueOf(mPark.getGeom()));
-                    mParking.add(mPark);
-                }
-                for (Parking p : mParking){
-                    if(p.getGeom()!=null) {
-                        if(calculateRadius(p.getGeom())) {
-                            LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
-                            try {
-                                mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
-                            }
-                        }
+                    if(mPark.getGeom()!= null) {
+                        if (calculateRadius(mPark.getGeom()))
+                            addMarker(mPark);
                     }
+                    Log.d("Geom " , String.valueOf(mPark.getGeom()));
                 }
             }
         });
     }
+    public void addMarker(Parking park){
+        LatLng latLng = new LatLng(park.getGeom().getLatitude(), park.getGeom().getLongitude());
+        try {
+            mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(park.getGeom())).snippet("size :" + park.getSize()));
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
     public Boolean calculateRadius(GeoPoint geoPoint){
-        Location locationA = new Location("A");
-        locationA.setLatitude(geoPoint.getLatitude());
-        locationA.setLongitude(geoPoint.getLongitude());
-        float dis = mLocation.distanceTo(locationA);
+        Location parkLocation = new Location("parking");
+        parkLocation.setLatitude(geoPoint.getLatitude());
+        parkLocation.setLongitude(geoPoint.getLongitude());
+        float dis = mLocation.distanceTo(parkLocation);
         Log.d("distant " , String.valueOf(dis));
         if(dis > 5000) {
             return false;
