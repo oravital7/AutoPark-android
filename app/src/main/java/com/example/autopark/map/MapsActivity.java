@@ -1,10 +1,6 @@
 package com.example.autopark.map;
-
-
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
-
-
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -15,13 +11,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.SearchView;
-import android.widget.Toast;
-
 import com.example.autopark.R;
-
 import com.example.autopark.model.Parking;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -29,22 +20,18 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-    private static final int Reques_Code = 101;
     private Location mLocation;
-    private FusedLocationProviderClient mFusedLocationProviderClient;
     private GoogleMap mMap;
     float mZoomLevel = 16.0f;
     private SearchView mSearchView;
@@ -54,6 +41,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FirebaseFirestore mFstore;
     private Parking mPark;
     private List<Parking> mParking;
+
 
 
     @Override
@@ -85,8 +73,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (mLocation != null)
             mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-
-        mMap.addMarker(new MarkerOptions().position(mCurrentLocation).title("Current Location"));
+        GeoPoint geoPoint = new GeoPoint(mLocation.getLatitude(), mLocation.getLongitude());
+        try {
+            mMap.addMarker(new MarkerOptions().position(mCurrentLocation).title(getAddressName(geoPoint)).snippet("Current Location"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
         connectToDatabase();
         searchView();
@@ -106,7 +98,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             for (Parking p : mParking){
                                 if(p.getGeom()!=null) {
                                     LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
-                                    mMap.addMarker(new MarkerOptions().position(latLng).title("Parking"));
+                                    try {
+                                        mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }
@@ -140,6 +136,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+    public String getAddressName(GeoPoint geoPoint) throws IOException {
+        List<Address> addressList = null;
+        Geocoder geocoders = new Geocoder(MapsActivity.this);
+
+        addressList = geocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
+        String address = addressList.get(0).getAddressLine(0);
+
+        return  address;
+    }
     public void addDataToDataBase(){
         Timestamp time = Timestamp.now();
         GeoPoint p1 = new GeoPoint(32.0923952,34.9691267);
@@ -156,16 +161,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Parking park3 = new Parking(time,p3,size3,user2);
         Parking park4 = new Parking(time,p4,size4,user2);
     }
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        switch (requestCode){
-//            case Reques_Code:
-//                if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-//                    GetlastLocation();
-//                }
-//                break;
-//        }
-//    }
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
