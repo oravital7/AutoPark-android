@@ -79,36 +79,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 getDeviceLocation();
             }
         });
-        connectToDatabase();
         searchView();
     }
-    public void connectToDatabase(){
-        mFstore.collection("parking").get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if (!queryDocumentSnapshots.isEmpty()) {
-                            List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
-                            for (DocumentSnapshot d : list) {
-                                mPark = d.toObject(Parking.class);
-                                Log.d("Geom " , String.valueOf(mPark.getGeom()));
-                                mParking.add(mPark);
-                            }
-                            for (Parking p : mParking){
-                                if(p.getGeom()!=null) {
-                                    LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
-                                    try {
-                                        mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-    }
-
 
     public void searchView(){
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -130,7 +102,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, mZoomLevel));
                     }
                 }
-
                 return false;
             }
             @Override
@@ -153,12 +124,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (mLocation != null)
             mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-//        GeoPoint geoPoint = new GeoPoint(mLocation.getLatitude(), mLocation.getLongitude());
-//        try {
-//            mMap.addMarker(new MarkerOptions().position(mCurrentLocation).title(getAddressName(geoPoint)).snippet("Current Location"));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
         mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
     }
@@ -171,23 +136,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         return  address;
     }
-    public void addDataToDataBase(){
-        Timestamp time = Timestamp.now();
-        GeoPoint p1 = new GeoPoint(32.0923952,34.9691267);
-        GeoPoint p2 = new GeoPoint(32.0910606,34.9689872);
-        GeoPoint p3 = new GeoPoint(32.0908038,34.9669221);
-        GeoPoint p4 = new GeoPoint(32.0901877,34.9657993);
-        double size = 12;
-        double size1 = 10;
-        double size3 = 9;
-        double size4 = 11;
-        String user1 = "2a";
-        String user2 = "3a";
-        Parking park2 = new Parking(time,p2,size1,user1);
-        Parking park3 = new Parking(time,p3,size3,user2);
-        Parking park4 = new Parking(time,p4,size4,user2);
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -206,16 +154,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 for (Parking p : mParking){
                     if(p.getGeom()!=null) {
-                        LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
-                        try {
-                            mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                        if(calculateRadius(p.getGeom())) {
+                            LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
+                            try {
+                                mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
                         }
                     }
                 }
             }
         });
+    }
+    public Boolean calculateRadius(GeoPoint geoPoint){
+        Location locationA = new Location("A");
+        locationA.setLatitude(geoPoint.getLatitude());
+        locationA.setLongitude(geoPoint.getLongitude());
+        float dis = mLocation.distanceTo(locationA);
+        Log.d("distant " , String.valueOf(dis));
+        if(dis > 5000) {
+            return false;
+        }
+        else
+            return true;
     }
     /**
      * Manipulates the map once available.
