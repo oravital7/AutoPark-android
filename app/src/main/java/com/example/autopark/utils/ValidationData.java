@@ -36,7 +36,7 @@ public class ValidationData {
             isValid = false;
         if (!validEmptyStr(street))
             isValid = false;
-        if (!validEmptyStr(houseNumber))
+        if (!validEmptyStr(houseNumber) || !isNumeric(houseNumber))
             isValid = false;
 
         if (!isValid)
@@ -96,6 +96,18 @@ public class ValidationData {
             res += edit.toString() + " ";
 
         return res;
+    }
+
+    private static boolean isNumeric(EditText num) {
+        try {
+           if (Integer.parseInt(num.getText().toString()) < 0)
+               return false;
+        } catch (NumberFormatException e) {
+            num.setError("This is not a valid number");
+            return false;
+        }
+
+        return true;
     }
 
 }

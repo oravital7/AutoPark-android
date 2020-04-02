@@ -1,15 +1,14 @@
 package com.example.autopark.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class User {
     private String firstName;
     private String lastName;
     private String email;
-    private String country;
-    private String city;
-    private String street;
-    private String houseNumber;
     private String phoneNumber;
-    private String password;
+    private Map<String, Object> address;
 
     public User() {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
@@ -27,24 +26,12 @@ public class User {
         return email;
     }
 
-    public String getCity() {
-        return city;
-    }
-
-    public String getStreet() {
-        return street;
-    }
-
-    public String getHouseNumber() {
-        return houseNumber;
+    public Map<String, Object> getAddress() {
+        return address;
     }
 
     public String getPhoneNumber() {
         return phoneNumber;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public User setFirstName(String firstName) {
@@ -62,33 +49,17 @@ public class User {
         return this;
     }
 
-    public User setCountry(String country) {
-        this.country = country;
-        return this;
-    }
-
-    public User setCity(String city) {
-        this.city = city;
-        return this;
-    }
-
-    public User setStreet(String street) {
-        this.street = street;
-        return this;
-    }
-
-    public User setHouseNumber(String houseNumber) {
-        this.houseNumber = houseNumber;
-        return this;
-    }
-
     public User setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
         return this;
     }
 
-    public User setPassword(String password) {
-        this.password = password;
+    public User setAddress(String country, String city, String street, int houseNumber) {
+        this.address = new HashMap<>();
+        address.put("country", country);
+        address.put("city", city);
+        address.put("street", street);
+        address.put("houseNumber", houseNumber);
         return this;
     }
 }
