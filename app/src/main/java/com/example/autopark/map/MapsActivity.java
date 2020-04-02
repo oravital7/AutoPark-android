@@ -73,12 +73,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (mLocation != null)
             mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-        GeoPoint geoPoint = new GeoPoint(mLocation.getLatitude(), mLocation.getLongitude());
-        try {
-            mMap.addMarker(new MarkerOptions().position(mCurrentLocation).title(getAddressName(geoPoint)).snippet("Current Location"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        GeoPoint geoPoint = new GeoPoint(mLocation.getLatitude(), mLocation.getLongitude());
+//        try {
+//            mMap.addMarker(new MarkerOptions().position(mCurrentLocation).title(getAddressName(geoPoint)).snippet("Current Location"));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        mMap.setMyLocationEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
         connectToDatabase();
         searchView();
