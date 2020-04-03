@@ -39,7 +39,11 @@ public class RegistrationActivity extends AppCompatActivity {
         final ProgressBar progressBar = findViewById(R.id.registrationProgress);
         progressBar.setVisibility(VideoView.VISIBLE);
 
-        if (fillUserData(user)) {
+        if (!fillUserData(user)) {
+            progressBar.setVisibility(VideoView.GONE);
+            return;
+        }
+
             final FirebaseAuth auth = FirebaseAuth.getInstance();
             EditText password = findViewById(R.id.password);
 
@@ -61,7 +65,6 @@ public class RegistrationActivity extends AppCompatActivity {
                             progressBar.setVisibility(VideoView.GONE);
                         }
                     });
-        }
     }
 
     private void updateAdditionalInformation(FirebaseUser currentUser, User dataUser) {
