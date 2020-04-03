@@ -75,20 +75,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         searchView();
     }
 
-    public void searchView(){
+    public void searchView() {
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
             @Override
             public boolean onQueryTextSubmit(String query) {
+                Log.d("map", "createUserWithEmail:success");
+
                 String location = mSearchView.getQuery().toString();
                 List<Address> addressList = null;
-                if(!location.isEmpty()){
+                if (!location.isEmpty()){
                     Geocoder geocoder = new Geocoder(MapsActivity.this);
                     try {
                         addressList = geocoder.getFromLocationName(location , 1);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    if(addressList.size() > 0) {
+                    if (addressList != null && !addressList.isEmpty()) {
                         Address address = addressList.get(0);
                         LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
                         mMap.addMarker(new MarkerOptions().position(latLng).title(location));
@@ -124,11 +127,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
     }
     public String getAddressName(GeoPoint geoPoint) throws IOException {
-        List<Address> addressList = null;
         Geocoder geocoders = new Geocoder(MapsActivity.this);
+        List<Address> addressList = null;
+        try {
+            addressList = geocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        String address = "";
 
-        addressList = geocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
-        String address = addressList.get(0).getAddressLine(0);
+        if (addressList != null && !addressList.isEmpty())
+            address = addressList.get(0).getAddressLine(0);
 
         return  address;
     }
@@ -149,7 +158,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     mParking.add(mPark);
                 }
                 for (Parking p : mParking){
-                    if(p.getGeom()!=null) {
+                    if(p.getGeom() != null) {
 //                        if(calculateRadius(p.getGeom())) {
                             LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
                             try {

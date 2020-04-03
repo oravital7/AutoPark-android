@@ -50,7 +50,7 @@ public class ValidationData {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (addressList.size() == 0)
+        if (addressList != null && addressList.isEmpty())
         {
             city.setError("The address you entered is incorrect");
             return false;
