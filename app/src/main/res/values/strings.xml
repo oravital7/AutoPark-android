@@ -2,8 +2,9 @@
     <string name="app_name">AutoPark</string>
     <string name="title_activity_maps">Map</string>
     <string name="find_available_parking">Find available parking</string>
-    <string name="sign_in">Sign In</string>
     <string name="already_have_an_account">Already have an account?</string>
     <string name="sign_up_for_free">Sign Up For Free</string>
     <string name="create">Create</string>
+    <string name="log_out">log out</string>
+    <string name="sign_in">Sign In</string>
 </resources>

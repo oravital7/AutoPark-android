@@ -3,12 +3,16 @@ package com.example.autopark.login;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.widget.VideoView;
 
+import com.example.autopark.MainMenu;
 import com.example.autopark.R;
 import com.example.autopark.model.User;
 import com.example.autopark.utils.ValidationData;
@@ -18,8 +22,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import io.opencensus.internal.StringUtils;
 
 public class RegistrationActivity extends AppCompatActivity {
 
@@ -33,10 +35,12 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     public void registerHandler(View v) {
-        User user = new User();
-        if (isValidData(user)) {
+        final User user = new User();
+        final ProgressBar progressBar = findViewById(R.id.registrationProgress);
+        progressBar.setVisibility(VideoView.VISIBLE);
+
+        if (fillUserData(user)) {
             final FirebaseAuth auth = FirebaseAuth.getInstance();
-            final User userFinal = user;
             EditText password = findViewById(R.id.password);
 
             auth.createUserWithEmailAndPassword(user.getEmail(), password.getText().toString())
@@ -46,17 +50,18 @@ public class RegistrationActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
                                 Log.d(TAG, "createUserWithEmail:success");
-                                updateAdditionalInformation(auth.getCurrentUser(), userFinal);
+                                updateAdditionalInformation(auth.getCurrentUser(), user);
+                                startActivity(new Intent(getApplicationContext(), MainMenu.class));
                             } else {
                                 Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                                Toast.makeText(RegistrationActivity.this, "Authentication failed.",
+                                Toast.makeText(RegistrationActivity.this, "Authentication failed. Please try again",
                                         Toast.LENGTH_SHORT).show();
                             }
+
+                            progressBar.setVisibility(VideoView.GONE);
                         }
                     });
         }
-
-
     }
 
     private void updateAdditionalInformation(FirebaseUser currentUser, User dataUser) {
@@ -64,7 +69,7 @@ public class RegistrationActivity extends AppCompatActivity {
         db.collection(userCollection).document(currentUser.getUid()).set(dataUser);
     }
 
-    private boolean isValidData(User user) {
+    private boolean fillUserData(User user) {
         EditText firstName = findViewById(R.id.firstName);
         EditText lastName = findViewById(R.id.lastName);
         EditText email = findViewById(R.id.email);
@@ -92,10 +97,11 @@ public class RegistrationActivity extends AppCompatActivity {
         if (!isValid)
             return false;
 
-
-        user.setFirstName(firstName.getText().toString()).setLastName(lastName.getText().toString())
-                .setEmail(email.getText().toString()).setAddress(country.getText().toString(),
-                    city.getText().toString(), street.getText().toString(), Integer.parseInt(houseNumber.getText().toString()))
+        user.setFirstName(firstName.getText().toString())
+                .setLastName(lastName.getText().toString())
+                .setEmail(email.getText().toString())
+                .setAddress(country.getText().toString(), city.getText().toString(),
+                        street.getText().toString(), Integer.parseInt(houseNumber.getText().toString()))
                 .setPhoneNumber(phoneNumber.getText().toString());
 
         return true;

@@ -17,7 +17,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".login.RegistrationActivity"></activity>
+        <activity android:name=".login.RegistrationActivity" />
         <activity android:name=".login.LoginActivity" />
         <activity android:name=".MainMenu" />
         <!--
@@ -34,7 +34,6 @@
 
         <activity
             android:name=".map.MapsActivity"
-            android:exported="true"
             android:label="@string/title_activity_maps" />
         <activity
             android:name=".MainActivity"

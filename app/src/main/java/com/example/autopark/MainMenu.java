@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.example.autopark.map.MapsActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class MainMenu extends AppCompatActivity {
 
@@ -21,4 +23,8 @@ public class MainMenu extends AppCompatActivity {
         startActivity(new Intent(this, MapsActivity.class));
     }
 
+    public void logOutHandler(View v) {
+        FirebaseAuth.getInstance().signOut();
+        startActivity(new Intent(this, MainActivity.class));
+    }
 }

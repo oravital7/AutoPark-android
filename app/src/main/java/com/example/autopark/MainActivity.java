@@ -8,6 +8,8 @@ import android.view.View;
 
 import com.example.autopark.login.LoginActivity;
 import com.example.autopark.login.RegistrationActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -15,7 +17,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_entrance);
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null)
+            startActivity(new Intent(this, MainMenu.class));
+        else
+            setContentView(R.layout.activity_entrance);
     }
 
     public void signInHandler(View v) { startActivity(new Intent(this, LoginActivity.class)); }
