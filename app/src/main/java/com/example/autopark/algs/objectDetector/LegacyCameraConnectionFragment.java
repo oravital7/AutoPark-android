@@ -1,4 +1,4 @@
-package com.example.autopark.objectDetector;
+package com.example.autopark.algs.objectDetector;
 
 /*
  * Copyright 2017 The TensorFlow Authors. All Rights Reserved.
@@ -32,8 +32,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.autopark.R;
-import com.example.autopark.objectDetector.env.ImageUtils;
-import com.example.autopark.objectDetector.env.Logger;
+import com.example.autopark.algs.objectDetector.env.ImageUtils;
+import com.example.autopark.algs.objectDetector.env.Logger;
 
 import java.io.IOException;
 import java.util.List;

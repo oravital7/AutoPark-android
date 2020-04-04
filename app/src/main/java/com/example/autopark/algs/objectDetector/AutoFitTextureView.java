@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.autopark.objectDetector;
+package com.example.autopark.algs.objectDetector;
 
 import android.content.Context;
 import android.util.AttributeSet;

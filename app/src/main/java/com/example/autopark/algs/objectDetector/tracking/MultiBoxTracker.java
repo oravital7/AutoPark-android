@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package com.example.autopark.objectDetector.tracking;
+package com.example.autopark.algs.objectDetector.tracking;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -29,10 +29,10 @@ import android.util.Pair;
 import android.util.TypedValue;
 import android.widget.Toast;
 
-import com.example.autopark.objectDetector.Classifier.Recognition;
-import com.example.autopark.objectDetector.env.BorderedText;
-import com.example.autopark.objectDetector.env.ImageUtils;
-import com.example.autopark.objectDetector.env.Logger;
+import com.example.autopark.algs.objectDetector.Classifier.Recognition;
+import com.example.autopark.algs.objectDetector.env.BorderedText;
+import com.example.autopark.algs.objectDetector.env.ImageUtils;
+import com.example.autopark.algs.objectDetector.env.Logger;
 
 import java.util.LinkedList;
 import java.util.List;

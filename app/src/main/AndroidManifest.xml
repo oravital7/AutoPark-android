@@ -41,7 +41,7 @@
             android:name=".map.MapsActivity"
             android:label="@string/title_activity_maps" />
         <activity
-            android:name=".objectDetector.DetectorActivity"
+            android:name=".algs.objectDetector.DetectorActivity"
             android:label="test" />
 
         <activity

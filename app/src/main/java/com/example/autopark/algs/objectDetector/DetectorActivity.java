@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.autopark.objectDetector;
+package com.example.autopark.algs.objectDetector;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -26,19 +26,17 @@ import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
-import android.os.Bundle;
 import android.os.SystemClock;
-import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
 import android.widget.Toast;
 
-import com.example.autopark.objectDetector.OverlayView.DrawCallback;
+import com.example.autopark.algs.objectDetector.OverlayView.DrawCallback;
 import com.example.autopark.R;
-import com.example.autopark.objectDetector.env.BorderedText;
-import com.example.autopark.objectDetector.env.ImageUtils;
-import com.example.autopark.objectDetector.env.Logger;
-import com.example.autopark.objectDetector.tracking.MultiBoxTracker;
+import com.example.autopark.algs.objectDetector.env.BorderedText;
+import com.example.autopark.algs.objectDetector.env.ImageUtils;
+import com.example.autopark.algs.objectDetector.env.Logger;
+import com.example.autopark.algs.objectDetector.tracking.MultiBoxTracker;
 
 import java.io.IOException;
 import java.util.LinkedList;

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package com.example.autopark.objectDetector;
+package com.example.autopark.algs.objectDetector;
 
 import android.graphics.Bitmap;
 import android.graphics.RectF;

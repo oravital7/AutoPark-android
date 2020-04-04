@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package com.example.autopark.objectDetector.tracking;
+package com.example.autopark.algs.objectDetector.tracking;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -23,8 +23,8 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 
-import com.example.autopark.objectDetector.env.Logger;
-import com.example.autopark.objectDetector.env.Size;
+import com.example.autopark.algs.objectDetector.env.Logger;
+import com.example.autopark.algs.objectDetector.env.Size;
 
 import java.util.ArrayList;
 import java.util.HashMap;

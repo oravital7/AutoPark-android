@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.autopark.objectDetector;
+package com.example.autopark.algs.objectDetector;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -53,7 +53,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.example.autopark.R;
-import com.example.autopark.objectDetector.env.Logger;
+import com.example.autopark.algs.objectDetector.env.Logger;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.example.autopark.map.MapsActivity;
-import com.example.autopark.objectDetector.DetectorActivity;
+import com.example.autopark.algs.objectDetector.DetectorActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class MainMenu extends AppCompatActivity {

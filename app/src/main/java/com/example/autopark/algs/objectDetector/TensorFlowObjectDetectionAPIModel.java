@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package com.example.autopark.objectDetector;
+package com.example.autopark.algs.objectDetector;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -23,7 +23,7 @@ import android.os.Trace;
 import org.tensorflow.Graph;
 import org.tensorflow.Operation;
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
-import com.example.autopark.objectDetector.env.Logger;
+import com.example.autopark.algs.objectDetector.env.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
