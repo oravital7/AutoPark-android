@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.example.autopark.map.MapsActivity;
+import com.example.autopark.objectDetector.DetectorActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class MainMenu extends AppCompatActivity {
@@ -17,12 +18,15 @@ public class MainMenu extends AppCompatActivity {
         setContentView(R.layout.activity_main_menu);
     }
 
-    public void mapHandlerBtn(View v)
-    {
+    public void mapHandlerBtn(View v) {
         startActivity(new Intent(this, MapsActivity.class));
     }
 
-    public void logOutHandler(View v) {
+    public void detectionTestHandlerBtn(View v) {
+        startActivity(new Intent(this, DetectorActivity.class));
+    }
+
+    public void logOutHandlerBtn(View v) {
         FirebaseAuth.getInstance().signOut();
         startActivity(new Intent(this, MainActivity.class));
     }
