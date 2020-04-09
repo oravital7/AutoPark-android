@@ -16,6 +16,7 @@ import android.widget.SearchView;
 
 import com.example.autopark.R;
 import com.example.autopark.model.Parking;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -41,7 +42,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private SearchView mSearchView;
     private LatLng mCurrentLocation;
     private LocationManager mLocationManager;
-
+    private Geocoder geocoders;
     private FirebaseFirestore mFstore;
     private Parking mPark;
     private List<Parking> mParking;
@@ -55,6 +56,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mSearchView = findViewById(R.id.location);
         mGps = findViewById(R.id.ic_gps);
         mParking = new ArrayList<>();
+        geocoders = new Geocoder(MapsActivity.this);
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
                             .findFragmentById(R.id.map);
@@ -127,7 +129,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
     }
     public String getAddressName(GeoPoint geoPoint) throws IOException {
-        Geocoder geocoders = new Geocoder(MapsActivity.this);
+
         List<Address> addressList = null;
         try {
             addressList = geocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
@@ -144,7 +146,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onStart() {
         super.onStart();
-        mFstore.collection("parking").addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+        // need to check if there is a current location
+        GeoPoint mLocation1 = new GeoPoint(32.06302, 34.77155);
+        //mLocation = new Location("32.06302,34.77155");
+        Log.d("test","mlocation1 :"+mLocation1.toString());
+        List<Address> addressListIntialize=new ArrayList<>();
+        try {
+            addressListIntialize = geocoders.getFromLocation(mLocation1.getLatitude(), mLocation1.getLongitude(), 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String city = addressListIntialize.get(0).getLocality();
+        String country = addressListIntialize.get(0).getCountryName();
+        mFstore.collection("parking")
+                .document(country)
+                .collection(city).addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
                 if (e != null) {
@@ -162,7 +178,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //                        if(calculateRadius(p.getGeom())) {
                             LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
                             try {
-                                mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("size :" + p.getSize()));
+                                mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("id :" + p.getID()));
                             } catch (IOException e1) {
                                 e1.printStackTrace();
 //                            }
