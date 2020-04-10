@@ -45,7 +45,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Geocoder geocoders;
     private FirebaseFirestore mFstore;
     private Parking mPark;
-    private List<Parking> mParking;
     private ImageView mGps;
 
     @Override
@@ -55,7 +54,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mFstore = FirebaseFirestore.getInstance();
         mSearchView = findViewById(R.id.location);
         mGps = findViewById(R.id.ic_gps);
-        mParking = new ArrayList<>();
         geocoders = new Geocoder(MapsActivity.this);
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -166,22 +164,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (e != null) {
                     return;
                 }
-                mParking.clear();
                 for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
                     DocumentSnapshot documentSnapshot = dc.getDocument();
                     mPark = documentSnapshot.toObject(Parking.class);
                     Log.d("Geom " , String.valueOf(mPark.getGeom()));
-                    mParking.add(mPark);
-                }
-                for (Parking p : mParking){
-                    if(p.getGeom() != null) {
-//                        if(calculateRadius(p.getGeom())) {
-                            LatLng latLng = new LatLng(p.getGeom().getLatitude(), p.getGeom().getLongitude());
-                            try {
-                                mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(p.getGeom())).snippet("id :" + p.getID()));
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
-//                            }
+                    if(mPark.getGeom() != null) {
+                        try {
+                            LatLng latLng = new LatLng(mPark.getGeom().getLatitude(),mPark.getGeom().getLongitude());
+                            mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID()));
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
                         }
                     }
                 }
