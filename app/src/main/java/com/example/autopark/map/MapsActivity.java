@@ -32,9 +32,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.IOException;
@@ -52,45 +50,62 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private SearchView mSearchView;
     private LatLng mCurrentLocation;
     private LocationManager mLocationManager;
-    private Geocoder geocoders;
+    private Geocoder mGeocoders;
     private FirebaseFirestore mFstore;
     private Parking mPark;
-    private List<Parking> mParking;
     private ImageView mGps;
-    private String TAG = "test";
+    private List<Parking> mParking;
     HashMap<String, Marker> hashMapMarker = new HashMap<>();
-    FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-            .setPersistenceEnabled(false)
-            .build();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         mFstore = FirebaseFirestore.getInstance();
-        mFstore.setFirestoreSettings(settings);
         mSearchView = findViewById(R.id.location);
         mGps = findViewById(R.id.ic_gps);
         mParking = new ArrayList<>();
-        geocoders = new Geocoder(MapsActivity.this);
+        mGeocoders = new Geocoder(MapsActivity.this);
+
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         supportMapFragment.getMapAsync(MapsActivity.this);
+        getDeviceLocation();
     }
 
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        getDeviceLocation();
+
+        if (mLocation != null) {
+            mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+            mMap.setMyLocationEnabled(true);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
+        }
+        else{
+            mCurrentLocation = new LatLng(32.06302,34.77155);
+            mMap.setMyLocationEnabled(true);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
+        }
+
         mGps.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getDeviceLocation();
             }
         });
+
         searchView();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startDb();
     }
 
     public void searchView() {
@@ -102,10 +117,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 String location = mSearchView.getQuery().toString();
                 List<Address> addressList = null;
-                if (!location.isEmpty()) {
+                if (!location.isEmpty()){
                     Geocoder geocoder = new Geocoder(MapsActivity.this);
                     try {
-                        addressList = geocoder.getFromLocationName(location, 1);
+                        addressList = geocoder.getFromLocationName(location , 1);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -118,13 +133,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 return false;
             }
-
             @Override
             public boolean onQueryTextChange(String newText) {
                 return false;
             }
         });
     }
+
 
     public void getDeviceLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
@@ -141,17 +156,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         mLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (mLocation != null)
-            mCurrentLocation = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
-        mMap.setMyLocationEnabled(true);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentLocation, mZoomLevel));
+
     }
+
 
     public String getAddressName(GeoPoint geoPoint) throws IOException {
 
         List<Address> addressList = null;
         try {
-            addressList = geocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
+            addressList = mGeocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -161,96 +174,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             address = addressList.get(0).getAddressLine(0);
 
         return address;
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // need to check if there is a current location
-        GeoPoint mLocation1 = new GeoPoint(32.18224, 34.87876);
-        //mLocation = new Location("32.06302,34.77155");
-        Log.d("test", "mlocation1 :" + mLocation1.toString());
-        List<Address> addressListIntialize = new ArrayList<>();
-        String city = "";
-        String country = "";
-
-        try {
-            Log.d("test", "in try1");
-            Log.d("test", "mLocation1.getLatitude(): " + mLocation1.getLatitude());
-            Log.d("test", "mLocation1.getLongitude(): " + mLocation1.getLongitude());
-            addressListIntialize = geocoders.getFromLocation(mLocation1.getLatitude(), mLocation1.getLongitude(), 1);
-            Log.d("test", "in try2");
-            city = addressListIntialize.get(0).getLocality();
-            country = addressListIntialize.get(0).getCountryName();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (addressListIntialize == null || addressListIntialize.size() == 0) {
-            city = "Ra'anana";
-            country = "Israel";
-            Log.d("Geom ", "in if");
-        }
-        mFstore.collection("parking").document(country)
-                .collection(city)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot snapshots,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "listen:error", e);
-                            return;
-                        }
-
-                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                            switch (dc.getType()) {
-                                case ADDED: {
-                                    Log.d(TAG, "New city: " + dc.getDocument().getData());
-                                    DocumentSnapshot documentSnapshot = dc.getDocument();
-
-                                    mPark = documentSnapshot.toObject(Parking.class);
-                                    Log.d("test", "mPark: " + mPark.getGeom());
-                                    Boolean isExist = false;
-                                    for (Parking park : mParking) {
-//                                                if(park.getGeom().equals(mPark.getGeom()))
-                                        if (park.getGeom().compareTo(mPark.getGeom()) == 0) {
-                                            isExist = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!isExist) {
-                                        Log.d("test", "new add on: " + mPark.getGeom());
-                                        mParking.add(mPark);
-                                        LatLng latLng = new LatLng(mPark.getGeom().getLatitude(), mPark.getGeom().getLongitude());
-                                        try {
-                                            Marker marker = mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID()));
-                                            hashMapMarker.put(mPark.getID(), marker);
-                                            //mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID()));
-
-                                        } catch (IOException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                    }
-
-                                }
-
-                                break;
-                                case MODIFIED:
-                                    Log.d(TAG, "Modified city: " + dc.getDocument().getData());
-                                    break;
-                                case REMOVED:
-                                    DocumentSnapshot documentSnapshot = dc.getDocument();
-
-                                    mPark = documentSnapshot.toObject(Parking.class);
-                                    Marker marker = hashMapMarker.get(mPark.getID());
-                                    marker.remove();
-                                    hashMapMarker.remove(mPark.getID());
-                                    Log.d(TAG, "Removed city: " + dc.getDocument().getData());
-                                    break;
-                            }
-                        }
-
-                    }
-                });
     }
 
     public Boolean calculateRadius(GeoPoint geoPoint) {
@@ -263,6 +186,95 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return false;
         } else
             return true;
+    }
+
+
+    public void startDb(){
+        // need to check if there is a current location
+
+
+        //mLocation = new Location("32.06302,34.77155");
+        Geocoder geocoders = new Geocoder(MapsActivity.this);
+        List<Address> addressList = null;
+        String city = "";
+        String country = "";
+
+        try {
+            addressList = geocoders.getFromLocation(mLocation.getLatitude(), mLocation.getLongitude(), 1);
+            Log.d("clocation", mLocation.toString());
+            city = addressList.get(0).getLocality();
+            country = addressList.get(0).getCountryName();
+            Log.d("cityinit", city);
+            Log.d("cityinit", country);
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        if(!city.isEmpty() && !country.isEmpty()) {
+            mFstore.collection("parking").document(country)
+                    .collection(city)
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot snapshots,
+                                            @Nullable FirebaseFirestoreException e) {
+                            if (e != null) {
+                                Log.w("test", "listen:error", e);
+                                return;
+                            }
+
+                            for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                                switch (dc.getType()) {
+                                    case ADDED: {
+                                        Log.d("test", "New city: " + dc.getDocument().getData());
+                                        DocumentSnapshot documentSnapshot = dc.getDocument();
+
+                                        mPark = documentSnapshot.toObject(Parking.class);
+                                        Log.d("test", "mPark: " + mPark.getGeom());
+                                        Boolean isExist = false;
+                                        for (Parking park : mParking) {
+//                                                if(park.getGeom().equals(mPark.getGeom()))
+                                            if (park.getGeom().compareTo(mPark.getGeom()) == 0) {
+                                                isExist = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!isExist) {
+                                            Log.d("test", "new add on: " + mPark.getGeom());
+                                            mParking.add(mPark);
+                                            LatLng latLng = new LatLng(mPark.getGeom().getLatitude(), mPark.getGeom().getLongitude());
+                                            try {
+                                                Marker marker = mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID()));
+                                                Log.d("address", "new add on: " + getAddressName(mPark.getGeom()));
+                                                hashMapMarker.put(mPark.getID(), marker);
+                                                //mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID()));
+
+                                            } catch (IOException e1) {
+                                                e1.printStackTrace();
+                                            }
+                                        }
+
+                                    }
+
+                                    break;
+                                    case MODIFIED:
+                                        Log.d("test", "Modified city: " + dc.getDocument().getData());
+                                        break;
+                                    case REMOVED:
+                                        DocumentSnapshot documentSnapshot = dc.getDocument();
+
+                                        mPark = documentSnapshot.toObject(Parking.class);
+                                        Marker marker = hashMapMarker.get(mPark.getID());
+                                        marker.remove();
+                                        hashMapMarker.remove(mPark.getID());
+                                        Log.d("test", "Removed city: " + dc.getDocument().getData());
+                                        break;
+                                }
+                            }
+
+                        }
+                    });
+        }
+
     }
     /**
      * Manipulates the map once available.

@@ -22,6 +22,11 @@ public class MainMenu extends AppCompatActivity {
         startActivity(new Intent(this, MapsActivity.class));
     }
 
+    public void sendLocation(View v) {
+        startActivity(new Intent(this, sendLocation.class));
+    }
+
+
     public void detectionTestHandlerBtn(View v) {
         startActivity(new Intent(this, DetectorActivity.class));
     }

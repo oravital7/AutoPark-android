@@ -16,19 +16,32 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.autopark.map.MapsActivity;
 import com.example.autopark.model.Parking;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+
+import static androidx.constraintlayout.widget.Constraints.TAG;
 
 public class sendLocation extends Activity implements LocationListener {
     protected LocationManager locationManager;
@@ -42,6 +55,8 @@ public class sendLocation extends Activity implements LocationListener {
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     private Geocoder geocoders;
     Button b_send;
+    Button allPark;
+
 
 
     @Override
@@ -50,6 +65,7 @@ public class sendLocation extends Activity implements LocationListener {
         setContentView(R.layout.activity_send_location);
         b_send = findViewById(R.id.b_sendLoc);
         geocoders = new Geocoder(sendLocation.this);
+        allPark = findViewById(R.id.get_data);
 
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -70,16 +86,36 @@ public class sendLocation extends Activity implements LocationListener {
             public void onClick(View v) {
                 //Log.d("trying stuff", "" +getLastLocation().getLatitude()+" "+getLastLocation().getLongitude());
                 Location location = getLastLocation();
-                if(location!=null)
-                {
-                    GeoPoint gp = new GeoPoint(location.getLatitude(),location.getLongitude());
+                if (location != null) {
+                    GeoPoint gp = new GeoPoint(location.getLatitude(), location.getLongitude());
                     addParking(gp);
                 }
             }
         });
+        allPark.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                db.collection("parking")
+                        .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                            @Override
+                            public void onEvent(@Nullable QuerySnapshot snapshots,
+                                                @Nullable FirebaseFirestoreException e) {
+                                if (e != null) {
+                                    Log.w("err", "Listen failed.", e);
+                                    return;
+                                }
 
+                                for (DocumentChange dc : snapshots.getDocumentChanges()) {
 
+                                        Log.d(TAG, "New city: " + dc.getDocument().toString());
+
+                                }
+                            }
+                        });
+
+        }});
     }
+
 
     public Location getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
