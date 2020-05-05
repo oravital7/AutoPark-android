@@ -56,6 +56,7 @@ public class sendLocation extends Activity implements LocationListener {
     private Geocoder geocoders;
     Button b_send;
     Button allPark;
+    MapsActivity mMap;
 
 
 
