@@ -63,6 +63,7 @@ public class MapsActivity extends AppCompatActivity
     private List<Parking> mParking;
     private Geocoder mGeocoders;
     private HashMap<String, Marker> hashMapMarker = new HashMap<>();
+    List<Marker> mMarkersSearch = new ArrayList<Marker>();
 
 
     // The entry point to the Places API.
@@ -288,8 +289,7 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public boolean onQueryTextSubmit(String query) {
                 Log.d("map", "createUserWithEmail:success");
-                if(mMarkerseache != null)
-                mMarkerseache.remove();
+
 
                 String location = mSearchView.getQuery().toString();
                 List<Address> addressList = null;
@@ -303,17 +303,50 @@ public class MapsActivity extends AppCompatActivity
                     }
                     if (addressList != null && !addressList.isEmpty()) {
                         Address address = addressList.get(0);
+                        String city = address.getLocality();
+                        String country = address.getCountryName();
+                        mFstore.collection("parking").document(country)
+                                .collection(city)
+                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onEvent(@Nullable QuerySnapshot snapshots,
+                                                        @Nullable FirebaseFirestoreException e) {
+                                        if (e != null) {
+                                            Log.w("test", "listen:error", e);
+                                            return;
+                                        }
+
+                                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                                            DocumentSnapshot documentSnapshot = dc.getDocument();
+                                            mPark = documentSnapshot.toObject(Parking.class);
+                                            if(mPark.getGeom() != null) {
+                                                LatLng latLng = new LatLng(mPark.getGeom().getLatitude(), mPark.getGeom().getLongitude());
+                                                try {
+                                                    mMarkersSearch.add(mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID())));
+                                                } catch (IOException ex) {
+                                                    ex.printStackTrace();
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                });
                         LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                        mMarkerseache = mMap.addMarker(new MarkerOptions().position(latLng).title(location));
                         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
+
+
                     }
                 }
                 return false;
             }
             @Override
             public boolean onQueryTextChange(String newText) {
-                if(mMarkerseache != null)
-                    mMarkerseache.remove();
+                if(!mMarkersSearch.isEmpty())
+                    for (Marker marker: mMarkersSearch) {
+                        marker.remove();
+                    }
+                mMarkersSearch.clear();
+
                 return false;
             }
         });
