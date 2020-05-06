@@ -20,6 +20,11 @@ import android.widget.Toast;
 
 import com.example.autopark.map.MapsActivity;
 import com.example.autopark.model.Parking;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
@@ -40,6 +45,7 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
@@ -83,14 +89,16 @@ public class sendLocation extends Activity implements LocationListener {
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 
+
         b_send.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //Log.d("trying stuff", "" +getLastLocation().getLatitude()+" "+getLastLocation().getLongitude());
-                Location location = getLastLocation();
-                if (location != null) {
-                    GeoPoint gp = new GeoPoint(location.getLatitude(), location.getLongitude());
-                    addParking(gp);
-                }
+//                Location location = getLastLocation();
+//                if (location != null) {
+//                    GeoPoint gp = new GeoPoint(location.getLatitude(), location.getLongitude());
+//                    addParking(gp);
+//                }
+                requestLocationUpdates();
             }
         });
         allPark.setOnClickListener(new View.OnClickListener() {
@@ -116,21 +124,33 @@ public class sendLocation extends Activity implements LocationListener {
 
         }});
     }
-
-
-    public Location getLastLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return null;
+    private void requestLocationUpdates() {
+        LocationRequest request = new LocationRequest();
+        request.setInterval(10000);
+        request.setFastestInterval(5000);
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(this);
+        int permission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            // Request location updates and when an update is
+            // received, store the location in Firebase
+            client.requestLocationUpdates(request, new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    Location location = locationResult.getLastLocation();
+                    if (location != null) {
+                        Log.d("sendl", "location update " + location);
+                        GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude());
+                        addParking(geoPoint);
+                    }
+                }
+            }, null);
         }
-        return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
     }
+
+
+
 
     public void addParking(GeoPoint myLocation)
     {

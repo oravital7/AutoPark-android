@@ -21,7 +21,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.GeoPoint;
 
 
@@ -70,6 +74,7 @@ public class MapsActivity extends AppCompatActivity
 //    private PlacesClient mPlacesClient;
 
     private ImageView mGps;
+    private ImageView mSendLocation;
 
     // The entry point to the Fused Location Provider.
     private FusedLocationProviderClient mFusedLocationProviderClient;
@@ -102,9 +107,11 @@ public class MapsActivity extends AppCompatActivity
             mLastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         }
+
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
         mGps = findViewById(R.id.ic_gps);
+        mSendLocation= findViewById(R.id.send_location);
         mSearchView = findViewById(R.id.location);
         mFstore = FirebaseFirestore.getInstance();
         mParking = new ArrayList<>();
@@ -113,18 +120,18 @@ public class MapsActivity extends AppCompatActivity
         Criteria criteria = new Criteria();
 
         String provider = locationManager.getBestProvider(criteria, true);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        mLocation = locationManager.getLastKnownLocation(provider);
-        Log.d("Or", mLocation.toString() + "add");
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            // TODO: Consider calling
+//            //    ActivityCompat#requestPermissions
+//            // here to request the missing permissions, and then overriding
+//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//            //                                          int[] grantResults)
+//            // to handle the case where the user grants the permission. See the documentation
+//            // for ActivityCompat#requestPermissions for more details.
+//            return;
+//        }
+//        mLocation = locationManager.getLastKnownLocation(provider);
+//        Log.d("Or", mLocation.toString() + "add");
 
 
 
@@ -173,6 +180,12 @@ public class MapsActivity extends AppCompatActivity
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
 
+        requestLocationUpdates();
+
+
+
+
+
         searchView();
 
         mGps.setOnClickListener(new View.OnClickListener() {
@@ -181,7 +194,18 @@ public class MapsActivity extends AppCompatActivity
                 getDeviceLocation();
             }
         });
+        mSendLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mLastKnownLocation != null){
+                    GeoPoint geoPoint = new GeoPoint(mLastKnownLocation.getLatitude() , mLastKnownLocation.getLongitude());
+                    addParking(geoPoint);
+
+                }
+            }
+        });
     }
+
 
 
 
@@ -193,6 +217,7 @@ public class MapsActivity extends AppCompatActivity
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
          */
+
         mFusedLocationProviderClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
@@ -201,22 +226,53 @@ public class MapsActivity extends AppCompatActivity
                         if (location != null) {
                             mLastKnownLocation = location;
                             if (mLastKnownLocation != null) {
+                                Log.d("isLocation", mLastKnownLocation.toString());
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(mLastKnownLocation.getLatitude(),
                                                 mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
 
                             }
                             else {
+                                Log.d("isLocation", "noLocationfind");
                                 mMap.moveCamera(CameraUpdateFactory
                                     .newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
                             mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
                             }
-                            startDb();
+
                         }
                     }
+
                 });
+        startDb();
+
     }
+    private void requestLocationUpdates() {
+        LocationRequest request = new LocationRequest();
+        request.setInterval(10000);
+        request.setFastestInterval(5000);
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(this);
+        int permission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            // Request location updates and when an update is
+            // received, store the location in Firebase
+            client.requestLocationUpdates(request, new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    Location location = locationResult.getLastLocation();
+                    if (location != null) {
+                        Log.d("sendl", "location update " + location);
+                        mLastKnownLocation = location;
+                        GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude());
+                        startDb();
+                    }
+                }
+            }, null);
+        }
+    }
+
 
 
     /**
@@ -295,7 +351,8 @@ public class MapsActivity extends AppCompatActivity
                 List<Address> addressList = null;
 
                 if (!location.isEmpty()){
-                    Geocoder geocoder = new Geocoder(MapsActivity.this);
+                    Locale locale = new Locale("he", "IL");
+                    Geocoder geocoder = new Geocoder(MapsActivity.this,locale);
                     try {
                         addressList = geocoder.getFromLocationName(location , 1);
                     } catch (IOException e) {
@@ -356,7 +413,10 @@ public class MapsActivity extends AppCompatActivity
     public void startDb(){
         // need to check if there is a current location
         //mLocation = new Location("32.06302,34.77155");
-
+        if(mLastKnownLocation != null)
+            Log.d("locationc", "havelocation");
+        else if(mLastKnownLocation == null)
+            Log.d("locationc", "nolocation");
         List<Address> addressList = null;
         Locale locale = new Locale("he", "IL");
         Geocoder geocoders = new Geocoder(MapsActivity.this , locale);
@@ -430,6 +490,7 @@ public class MapsActivity extends AppCompatActivity
 
                                         mPark = documentSnapshot.toObject(Parking.class);
                                         Marker marker = hashMapMarker.get(mPark.getID());
+
                                         marker.remove();
                                         hashMapMarker.remove(mPark.getID());
                                         Log.d("test", "Removed city: " + dc.getDocument().getData());
@@ -447,6 +508,7 @@ public class MapsActivity extends AppCompatActivity
     public String getAddressName(GeoPoint geoPoint) throws IOException {
 
         List<Address> addressList = null;
+
         try {
             addressList = mGeocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
         } catch (Exception e) {
@@ -461,6 +523,29 @@ public class MapsActivity extends AppCompatActivity
     }
     public Location getCurrentLocation(){
         return mLastKnownLocation;
+    }
+
+    public void addParking(GeoPoint myLocation)
+    {
+        String Id = "20";
+        int size = 5;
+        Timestamp timestamp = Timestamp.now();
+        Parking park = new Parking(timestamp,myLocation, size, Id);
+        Locale locale = new Locale("he", "IL");
+        Geocoder geocoders = new Geocoder(MapsActivity.this , locale);
+        //converting to list
+        List<Address> addressListIntialize=new ArrayList<>();
+        try {
+            addressListIntialize = geocoders.getFromLocation(myLocation.getLatitude(), myLocation.getLongitude(), 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String city = addressListIntialize.get(0).getLocality();
+        String country = addressListIntialize.get(0).getCountryName();
+
+        mFstore.collection("parking")
+                .document(country)
+                .collection(city).add(park);
     }
 
 }
