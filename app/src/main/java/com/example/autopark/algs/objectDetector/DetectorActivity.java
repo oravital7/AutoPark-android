@@ -27,6 +27,7 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.SystemClock;
+import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
 import android.widget.Toast;
@@ -39,6 +40,7 @@ import com.example.autopark.algs.objectDetector.env.Logger;
 import com.example.autopark.algs.objectDetector.tracking.MultiBoxTracker;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -322,6 +324,19 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 mappedRecognitions.add(result);
               }
             }
+            /****** ********/
+            List<RectF> parks = new ArrayList<RectF>();
+
+            for (Classifier.Recognition  result : results)
+            {
+              if (result.getTitle().equals("car") && result.getConfidence() > 0.5)
+                parks.add(result.getLocation());
+            }
+
+            ParkingRecognition parkingRecognition = new ParkingRecognition(croppedBitmap.getHeight(), croppedBitmap.getWidth());
+            List<RectF> freeParks = parkingRecognition.detectParking(parks);
+
+            /****** ********/
 
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
             trackingOverlay.postInvalidate();
