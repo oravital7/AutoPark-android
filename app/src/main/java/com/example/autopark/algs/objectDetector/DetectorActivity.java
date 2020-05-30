@@ -26,6 +26,7 @@ import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.os.Debug;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
@@ -289,6 +290,25 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
+
+
+            /****** ********/
+            List<RectF> parks = new ArrayList<RectF>();
+
+            for (Classifier.Recognition  result : results)
+            {
+              if (result.getTitle().equals("car") && result.getConfidence() > 0.3)
+                parks.add(result.getLocation());
+            }
+
+            ParkingRecognition parkingRecognition = new ParkingRecognition(DESIRED_PREVIEW_SIZE.getHeight(), DESIRED_PREVIEW_SIZE.getWidth());
+            List<RectF> freeParks = parkingRecognition.detectParking(parks);
+            for (RectF rect : freeParks)
+              Log.d("Detector" ,"Parking location: " + rect);
+
+            /****** ********/
+
+
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
 
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
@@ -311,32 +331,37 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 break;
             }
 
-            final List<Classifier.Recognition> mappedRecognitions =
-                new LinkedList<Classifier.Recognition>();
+            final List<Classifier.Recognition> mappedRecognitions = new LinkedList<Classifier.Recognition>();
 
+            int index = 0;
             for (final Classifier.Recognition result : results) {
-              final RectF location = result.getLocation();
-              if (location != null && result.getConfidence() >= minimumConfidence) {
-                canvas.drawRect(location, paint);
-
-                cropToFrameTransform.mapRect(location);
-                result.setLocation(location);
-                mappedRecognitions.add(result);
+          //    if (index < freeParks.size())
+              {
+                final RectF location = result.getLocation();
+                if (location != null) {
+                  canvas.drawRect(location, paint);
+                  cropToFrameTransform.mapRect(location);
+                  result.setLocation(location);
+                  mappedRecognitions.add(result);
+                }
               }
             }
-            /****** ********/
-            List<RectF> parks = new ArrayList<RectF>();
 
-            for (Classifier.Recognition  result : results)
-            {
-              if (result.getTitle().equals("car") && result.getConfidence() > 0.5)
-                parks.add(result.getLocation());
+
+            int id = 111;
+            for (RectF location : freeParks) {
+              Log.d("Detector" ,"Parking location1: " + location);
+              // final RectF location = result;
+              Classifier.Recognition res = new Classifier.Recognition("" + id++, "park", 1.0f, location);
+              if (location != null /* && result.getConfidence() >= minimumConfidence */) {
+                canvas.drawRect(location, paint);
+                cropToFrameTransform.mapRect(location);
+                res.setLocation(location);
+                mappedRecognitions.add(res);
+               // tracker.draw(canvas);
+              }
             }
 
-            ParkingRecognition parkingRecognition = new ParkingRecognition(croppedBitmap.getHeight(), croppedBitmap.getWidth());
-            List<RectF> freeParks = parkingRecognition.detectParking(parks);
-
-            /****** ********/
 
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
             trackingOverlay.postInvalidate();
