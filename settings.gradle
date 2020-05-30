@@ -1,3 +1,5 @@
 rootProject.name='AutoPark'
 include ':app'
-include ':java'
+
+include ':openCVLibrary2411'
+

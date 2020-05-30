@@ -18,6 +18,7 @@ package com.example.autopark.algs.objectDetector;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -26,10 +27,15 @@ import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.os.Build;
+import android.os.Environment;
 import android.os.SystemClock;
+import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 
 import com.example.autopark.algs.objectDetector.OverlayView.DrawCallback;
 import com.example.autopark.R;
@@ -39,8 +45,18 @@ import com.example.autopark.algs.objectDetector.env.Logger;
 import com.example.autopark.algs.objectDetector.tracking.MultiBoxTracker;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+
 import java.util.HashMap;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import java.util.ArrayList;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -49,6 +65,7 @@ import java.util.Vector;
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
  * objects.
  */
+@RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener {
   private static final Logger LOGGER = new Logger();
 
@@ -120,6 +137,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private byte[] luminanceCopy;
 
   private BorderedText borderedText;
+
+  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -246,6 +265,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   OverlayView trackingOverlay;
 
+  @RequiresApi(api = Build.VERSION_CODES.KITKAT)
   @Override
   protected void processImage() {
     ++timestamp;
@@ -275,9 +295,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
     System.arraycopy(originalLuminance, 0, luminanceCopy, 0, originalLuminance.length);
     readyForNextImage();
+    InputStream st = null;
+//    try {
+//      st = getAssets().open("park.jpeg");
+//      cropCopyBitmap = new BitmapFactory().decodeStream(st);
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
 
     final Canvas canvas = new Canvas(croppedBitmap);
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
+
     // For examining the actual TF input.
     if (SAVE_PREVIEW_BITMAP) {
       ImageUtils.saveBitmap(croppedBitmap);
@@ -290,8 +318,24 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
-            lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
+            String path = Environment.getExternalStorageDirectory().toString();
+            LOGGER.i("filenameor " + path);
+            OutputStream fOut= null;
+            File file = new File(path);
+            Integer cout = 0;
+            try {
+              fOut = new FileOutputStream(file);
+            } catch (FileNotFoundException e) {
+              e.printStackTrace();
+            }
+            try (FileOutputStream out = new FileOutputStream(path)) {
+              croppedBitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+              // PNG is a lossless format, the compression factor (100) is ignored
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
 
+            lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
             final Canvas canvas = new Canvas(cropCopyBitmap);
             final Paint paint = new Paint();
@@ -337,6 +381,19 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 mappedRecognitions.add(result);
               }
             }
+            /****** ********/
+            List<RectF> parks = new ArrayList<RectF>();
+
+            for (Classifier.Recognition  result : results)
+            {
+              if (result.getTitle().equals("car") && result.getConfidence() > 0.5)
+                parks.add(result.getLocation());
+            }
+
+            ParkingRecognition parkingRecognition = new ParkingRecognition(croppedBitmap.getHeight(), croppedBitmap.getWidth());
+            List<RectF> freeParks = parkingRecognition.detectParking(parks);
+
+            /****** ********/
 
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
             trackingOverlay.postInvalidate();
