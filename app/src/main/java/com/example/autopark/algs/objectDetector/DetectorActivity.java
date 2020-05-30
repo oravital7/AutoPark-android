@@ -37,8 +37,10 @@ import com.example.autopark.algs.objectDetector.env.BorderedText;
 import com.example.autopark.algs.objectDetector.env.ImageUtils;
 import com.example.autopark.algs.objectDetector.env.Logger;
 import com.example.autopark.algs.objectDetector.tracking.MultiBoxTracker;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -65,7 +67,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private static final String TF_OD_API_MODEL_FILE =
       "file:///android_asset/ssd_mobilenet_v1_android_export.pb";
   private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/coco_labels_list.txt";
-
+  private FirebaseFirestore mFstore = FirebaseFirestore.getInstance();
   // Configuration values for tiny-yolo-voc. Note that the graph is not included with TensorFlow and
   // must be manually placed in the assets/ directory by the user.
   // Graphs and models downloaded from http://pjreddie.com/darknet/yolo/ may be converted e.g. via
@@ -118,6 +120,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private byte[] luminanceCopy;
 
   private BorderedText borderedText;
+
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
     final float textSizePx =
@@ -316,6 +319,18 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               final RectF location = result.getLocation();
               if (location != null && result.getConfidence() >= minimumConfidence) {
                 canvas.drawRect(location, paint);
+                System.out.println("location is "+location);
+                System.out.println("result is "+result.getTitle());
+                if(result.getTitle().equals("car"))
+                {
+                  System.out.println("in if");
+                  HashMap<String, Object> Rent = new HashMap<String, Object>();
+                  Rent.put("title", result.getTitle());
+                  Rent.put("location", location);
+                  mFstore.collection("rectLocation")
+                          .add(Rent);
+                }
+
 
                 cropToFrameTransform.mapRect(location);
                 result.setLocation(location);
