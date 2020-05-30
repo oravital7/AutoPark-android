@@ -44,4 +44,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore:21.4.2'
 
     implementation 'org.tensorflow:tensorflow-android:1.13.1'
+    implementation project(path: ':openCVLibrary2411')
 }
