@@ -49,12 +49,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
-import java.util.HashMap;
-
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.util.ArrayList;
 
 import java.util.LinkedList;
@@ -313,27 +309,48 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
     runInBackground(
         new Runnable() {
+          @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
           @Override
           public void run() {
             LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
-            String path = Environment.getExternalStorageDirectory().toString();
-            LOGGER.i("filenameor " + path);
-            OutputStream fOut= null;
-            File file = new File(path);
-            Integer cout = 0;
-            try {
-              fOut = new FileOutputStream(file);
-            } catch (FileNotFoundException e) {
-              e.printStackTrace();
+
+            /****** ********/
+            List<RectF> parks = new ArrayList<RectF>();
+
+            for (Classifier.Recognition  result : results)
+            {
+              if (result.getTitle().equals("car") && result.getConfidence() > 0.3)
+                parks.add(result.getLocation());
             }
-            try (FileOutputStream out = new FileOutputStream(path)) {
-              croppedBitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-              // PNG is a lossless format, the compression factor (100) is ignored
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
+
+            ParkingRecognition parkingRecognition = new ParkingRecognition(DESIRED_PREVIEW_SIZE.getHeight(), DESIRED_PREVIEW_SIZE.getWidth());
+            List<RectF> freeParks = parkingRecognition.detectParking(parks);
+            for (RectF rect : freeParks)
+              Log.d("Detector" ,"Parking location: " + rect);
+
+            /****** ********/
+
+
+            lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
+
+//            String path = Environment.getExternalStorageDirectory().toString();
+//            LOGGER.i("filenameor " + path);
+//            OutputStream fOut= null;
+//            File file = new File(path);
+//            Integer cout = 0;
+//            try {
+//              fOut = new FileOutputStream(file);
+//            } catch (FileNotFoundException e) {
+//              e.printStackTrace();
+//            }
+//            try (FileOutputStream out = new FileOutputStream(path)) {
+//              croppedBitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+//              // PNG is a lossless format, the compression factor (100) is ignored
+//            } catch (IOException e) {
+//              e.printStackTrace();
+//            }
 
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
@@ -356,45 +373,38 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 break;
             }
 
-            final List<Classifier.Recognition> mappedRecognitions =
-                new LinkedList<Classifier.Recognition>();
+            final List<Classifier.Recognition> mappedRecognitions = new LinkedList<Classifier.Recognition>();
 
+            int index = 0;
             for (final Classifier.Recognition result : results) {
-              final RectF location = result.getLocation();
-              if (location != null && result.getConfidence() >= minimumConfidence) {
-                //canvas.drawRect(location, paint);
-//                System.out.println("location is "+location);
-//                System.out.println("result is "+result.getTitle());
-//                if(result.getTitle().equals("car"))
-//                {
-//                  System.out.println("in if");
-//                  HashMap<String, Object> Rent = new HashMap<String, Object>();
-//                  Rent.put("title", result.getTitle());
-//                  Rent.put("location", location);
-//                  mFstore.collection("rectLocation")
-//                          .add(Rent);
-//                }
+          //    if (index < freeParks.size())
+              {
+                final RectF location = result.getLocation();
+                if (location != null) {
+                  canvas.drawRect(location, paint);
+                  cropToFrameTransform.mapRect(location);
+                  result.setLocation(location);
+                  mappedRecognitions.add(result);
+                }
 
-
-                cropToFrameTransform.mapRect(location);
-                result.setLocation(location);
-                mappedRecognitions.add(result);
               }
             }
-            /****** ********/
-            List<RectF> parks = new ArrayList<RectF>();
 
-            for (Classifier.Recognition  result : results)
-            {
-              if (result.getTitle().equals("car") && result.getConfidence() > 0.5)
-                parks.add(result.getLocation());
+
+            int id = 111;
+            for (RectF location : freeParks) {
+              Log.d("Detector" ,"Parking location1: " + location);
+              // final RectF location = result;
+              Classifier.Recognition res = new Classifier.Recognition("" + id++, "park", 1.0f, location);
+              if (location != null /* && result.getConfidence() >= minimumConfidence */) {
+                canvas.drawRect(location, paint);
+                cropToFrameTransform.mapRect(location);
+                res.setLocation(location);
+                mappedRecognitions.add(res);
+               // tracker.draw(canvas);
+              }
             }
 
-            ParkingRecognition parkingRecognition = new ParkingRecognition(croppedBitmap.getHeight(), croppedBitmap.getWidth());
-            Log.i("park","height "+croppedBitmap.getHeight()+" width "+croppedBitmap.getWidth());
-            List<RectF> freeParks = parkingRecognition.detectParking(parks);
-
-            /****** ********/
 
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
             trackingOverlay.postInvalidate();

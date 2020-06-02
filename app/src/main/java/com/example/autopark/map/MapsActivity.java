@@ -372,7 +372,7 @@ public class MapsActivity extends AppCompatActivity
                                             Log.w("test", "listen:error", e);
                                             return;
                                         }
-
+                                        //real time update
                                         for (DocumentChange dc : snapshots.getDocumentChanges()) {
                                             DocumentSnapshot documentSnapshot = dc.getDocument();
                                             mPark = documentSnapshot.toObject(Parking.class);
