@@ -362,18 +362,18 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             for (final Classifier.Recognition result : results) {
               final RectF location = result.getLocation();
               if (location != null && result.getConfidence() >= minimumConfidence) {
-                canvas.drawRect(location, paint);
-                System.out.println("location is "+location);
-                System.out.println("result is "+result.getTitle());
-                if(result.getTitle().equals("car"))
-                {
-                  System.out.println("in if");
-                  HashMap<String, Object> Rent = new HashMap<String, Object>();
-                  Rent.put("title", result.getTitle());
-                  Rent.put("location", location);
-                  mFstore.collection("rectLocation")
-                          .add(Rent);
-                }
+                //canvas.drawRect(location, paint);
+//                System.out.println("location is "+location);
+//                System.out.println("result is "+result.getTitle());
+//                if(result.getTitle().equals("car"))
+//                {
+//                  System.out.println("in if");
+//                  HashMap<String, Object> Rent = new HashMap<String, Object>();
+//                  Rent.put("title", result.getTitle());
+//                  Rent.put("location", location);
+//                  mFstore.collection("rectLocation")
+//                          .add(Rent);
+//                }
 
 
                 cropToFrameTransform.mapRect(location);
@@ -391,6 +391,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             }
 
             ParkingRecognition parkingRecognition = new ParkingRecognition(croppedBitmap.getHeight(), croppedBitmap.getWidth());
+            Log.i("park","height "+croppedBitmap.getHeight()+" width "+croppedBitmap.getWidth());
             List<RectF> freeParks = parkingRecognition.detectParking(parks);
 
             /****** ********/

@@ -24,19 +24,22 @@ public class ParkingRecognition {
         for (int i = 0; i < cars.size(); i++)
         {
             RectF park = cars.get(i);
-            for (int j = i; j < cars.size(); j++)
+            for (int j = i+1; j < cars.size(); j++)
             {
                 RectF park2 = cars.get(j);
-                if (park.right <= heightThresHold && park2.right <= heightThresHold)
-                {
-                    RectF tempPark = calcParksDistance(park, park2);
-                    if (tempPark != null)
-                        results.add(tempPark);
-                }
-                else if (park.left >= heightThresHold && park2.left >= heightThresHold)
-                {
-                    // TODO:: Call function
-                }
+                RectF tempPark = calcParksDistance(park, park2);
+                if (tempPark != null)
+                    results.add(tempPark);
+//                if (park.right <= heightThresHold && park2.right <= heightThresHold)
+//                {
+//                    RectF tempPark = calcParksDistance(park, park2);
+//                    if (tempPark != null)
+//                        results.add(tempPark);
+//                }
+//                else if (park.left >= heightThresHold && park2.left >= heightThresHold)
+//                {
+//                    // TODO:: Call function
+//                }
             }
         }
 
