@@ -25,29 +25,32 @@ public class ParkingRecognition {
             Log.d("detectParking" ,"car: " + rect);
 
         List<RectF> results = new ArrayList<RectF>();
+        List<RectF> res=new ArrayList<>();
         int widthThresHold = width / 2;
         for (int i = 0; i < cars.size(); i++)
         {
             RectF park = cars.get(i);
             for (int j = i + 1; j < cars.size(); j++)
             {
-//                "RectF(" + left + ", " + top + ", " + right + ", " + bottom + ")";
-                RectF tempPark = null;
+              List<RectF> tempPark = null;
                 RectF park2 = cars.get(j);
+
                 if ((park.right <= widthThresHold && park2.right <= widthThresHold) || (park.left >= widthThresHold && park2.left >= widthThresHold))
                     tempPark = calcParksDistance(park, park2);
                 else
                     tempPark = calcParksDistance(park, park2);
 
-                if (tempPark != null)
-                    results.add(tempPark);
+                if (tempPark != null){
+                    res = new ArrayList<>(results.size() + tempPark.size());
+                    res.addAll(results);
+                    res.addAll(tempPark);
+                }
             }
         }
-
-        return results;
+        return res;
     }
 
-    private RectF calcParksDistance(RectF park, RectF park2)
+    private List<RectF> calcParksDistance(RectF park, RectF park2)
     {
         PointF pBottom;
         PointF pTop;
@@ -76,12 +79,32 @@ public class ParkingRecognition {
 
         PointF pTopMiddle = new  PointF(parkTop.width() / 2 + parkTop.left, parkTop.bottom - parkTop.height() / 2);
         PointF pBottomMiddle = new  PointF(parkBottom.width() / 2 + parkBottom.left, parkBottom.bottom - parkBottom.height() / 2 );
+        int numberOfparks=(int)(distance / avgHeight);
+        float sub=(float)avgHeight;
+        List<RectF>allFreeParks=new ArrayList<RectF>();;
+        RectF freeParking=null;
+        for(int i=1;i<=numberOfparks;i++)
+        {
+            pBottomMiddle = new  PointF(parkBottom.width() / 2 + parkBottom.left, parkBottom.bottom - parkBottom.height() / 2 );
+            if(i==numberOfparks)
+            {
+                freeParking=new RectF(pTopMiddle.x, pTopMiddle.y,pBottomMiddle.x, pBottomMiddle.y);
+                allFreeParks.add(freeParking);
+                break;
+            }
+            else
+            {
+               freeParking=new RectF(pTopMiddle.x+(sub*i), pTopMiddle.y,pBottomMiddle.x, pBottomMiddle.y) ;
+               parkBottom=freeParking;
+               allFreeParks.add(freeParking);
+            }
 
-        Log.d("Ariel", "Distance [" + distance + "]" + "avgH [" + avgHeight + "]" + "res [" + distance / avgHeight + "]");
-        if (distance >= avgHeight)
-            return new RectF(pTopMiddle.x,pTopMiddle.y,pBottomMiddle.x,pBottomMiddle.y);
 
-        return null;
+        }
+
+
+
+        return allFreeParks;
     }
 
 //    private List<RectF> getSideParks(List<RectF> parks, Side side)
