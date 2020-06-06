@@ -337,6 +337,7 @@ public class MapsActivity extends AppCompatActivity
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }
+
     }
 
     public void searchView() {
@@ -351,8 +352,8 @@ public class MapsActivity extends AppCompatActivity
                 List<Address> addressList = null;
 
                 if (!location.isEmpty()){
-                    Locale locale = new Locale("he", "IL");
-                    Geocoder geocoder = new Geocoder(MapsActivity.this,locale);
+                    //Locale locale = new Locale("he", "IL");
+                    Geocoder geocoder = new Geocoder(MapsActivity.this , Locale.ENGLISH);;
                     try {
                         addressList = geocoder.getFromLocationName(location , 1);
                     } catch (IOException e) {
@@ -418,8 +419,8 @@ public class MapsActivity extends AppCompatActivity
         else if(mLastKnownLocation == null)
             Log.d("locationc", "nolocation");
         List<Address> addressList = null;
-        Locale locale = new Locale("he", "IL");
-        Geocoder geocoders = new Geocoder(MapsActivity.this , locale);
+       //Locale locale = new Locale("he", "IL");
+        Geocoder geocoders = new Geocoder(MapsActivity.this , Locale.ENGLISH);
 
         String city = "";
         String country = "";
@@ -531,8 +532,8 @@ public class MapsActivity extends AppCompatActivity
         int size = 5;
         Timestamp timestamp = Timestamp.now();
         Parking park = new Parking(timestamp,myLocation, size, Id);
-        Locale locale = new Locale("he", "IL");
-        Geocoder geocoders = new Geocoder(MapsActivity.this , locale);
+        //Locale locale = new Locale("he", "IL");
+        Geocoder geocoders = new Geocoder(MapsActivity.this , Locale.ENGLISH);
         //converting to list
         List<Address> addressListIntialize=new ArrayList<>();
         try {

@@ -98,7 +98,7 @@ public class sendLocation extends Activity implements LocationListener {
 //                    GeoPoint gp = new GeoPoint(location.getLatitude(), location.getLongitude());
 //                    addParking(gp);
 //                }
-                requestLocationUpdates();
+               // requestLocationUpdates();
             }
         });
         allPark.setOnClickListener(new View.OnClickListener() {
@@ -124,30 +124,30 @@ public class sendLocation extends Activity implements LocationListener {
 
         }});
     }
-    private void requestLocationUpdates() {
-        LocationRequest request = new LocationRequest();
-        request.setInterval(10000);
-        request.setFastestInterval(5000);
-        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(this);
-        int permission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permission == PackageManager.PERMISSION_GRANTED) {
-            // Request location updates and when an update is
-            // received, store the location in Firebase
-            client.requestLocationUpdates(request, new LocationCallback() {
-                @Override
-                public void onLocationResult(LocationResult locationResult) {
-                    Location location = locationResult.getLastLocation();
-                    if (location != null) {
-                        Log.d("sendl", "location update " + location);
-                        GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude());
-                        addParking(geoPoint);
-                    }
-                }
-            }, null);
-        }
-    }
+//    private void requestLocationUpdates() {
+//        LocationRequest request = new LocationRequest();
+//        request.setInterval(10000);
+//        request.setFastestInterval(5000);
+//        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+//        FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(this);
+//        int permission = ContextCompat.checkSelfPermission(this,
+//                Manifest.permission.ACCESS_FINE_LOCATION);
+//        if (permission == PackageManager.PERMISSION_GRANTED) {
+//            // Request location updates and when an update is
+//            // received, store the location in Firebase
+//            client.requestLocationUpdates(request, new LocationCallback() {
+//                @Override
+//                public void onLocationResult(LocationResult locationResult) {
+//                    Location location = locationResult.getLastLocation();
+//                    if (location != null) {
+//                        Log.d("sendl", "location update " + location);
+//                        GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude());
+//                        addParking(geoPoint);
+//                    }
+//                }
+//            }, null);
+//        }
+//    }
 
 
 
