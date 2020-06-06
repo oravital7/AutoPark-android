@@ -28,7 +28,6 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Build;
-import android.os.Environment;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Size;
@@ -45,12 +44,8 @@ import com.example.autopark.algs.objectDetector.env.Logger;
 import com.example.autopark.algs.objectDetector.tracking.MultiBoxTracker;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
 import java.util.LinkedList;
@@ -291,13 +286,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
     System.arraycopy(originalLuminance, 0, luminanceCopy, 0, originalLuminance.length);
     readyForNextImage();
-    InputStream st = null;
-//    try {
-//      st = getAssets().open("park.jpeg");
-//      cropCopyBitmap = new BitmapFactory().decodeStream(st);
-//    } catch (IOException e) {
-//      e.printStackTrace();
-//    }
 
     final Canvas canvas = new Canvas(croppedBitmap);
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
@@ -334,25 +322,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-
-//            String path = Environment.getExternalStorageDirectory().toString();
-//            LOGGER.i("filenameor " + path);
-//            OutputStream fOut= null;
-//            File file = new File(path);
-//            Integer cout = 0;
-//            try {
-//              fOut = new FileOutputStream(file);
-//            } catch (FileNotFoundException e) {
-//              e.printStackTrace();
-//            }
-//            try (FileOutputStream out = new FileOutputStream(path)) {
-//              croppedBitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-//              // PNG is a lossless format, the compression factor (100) is ignored
-//            } catch (IOException e) {
-//              e.printStackTrace();
-//            }
-
-            lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
             final Canvas canvas = new Canvas(cropCopyBitmap);
             final Paint paint = new Paint();
@@ -375,36 +344,25 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             final List<Classifier.Recognition> mappedRecognitions = new LinkedList<Classifier.Recognition>();
 
-            int index = 0;
             for (final Classifier.Recognition result : results) {
-          //    if (index < freeParks.size())
-              {
                 final RectF location = result.getLocation();
                 if (location != null) {
                   canvas.drawRect(location, paint);
                   cropToFrameTransform.mapRect(location);
                   result.setLocation(location);
                   mappedRecognitions.add(result);
-                }
-
               }
             }
-
 
             int id = 111;
             for (RectF location : freeParks) {
               Log.d("Detector" ,"Parking location1: " + location);
-              // final RectF location = result;
               Classifier.Recognition res = new Classifier.Recognition("" + id++, "park", 1.0f, location);
-              if (location != null /* && result.getConfidence() >= minimumConfidence */) {
                 canvas.drawRect(location, paint);
                 cropToFrameTransform.mapRect(location);
                 res.setLocation(location);
                 mappedRecognitions.add(res);
-               // tracker.draw(canvas);
-              }
             }
-
 
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
             trackingOverlay.postInvalidate();
