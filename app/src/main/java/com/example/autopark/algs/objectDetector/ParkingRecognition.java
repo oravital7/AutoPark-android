@@ -23,7 +23,6 @@ public class ParkingRecognition {
         Log.d("detectParking" ,"size: " + cars.size());
         for (RectF rect : cars)
             Log.d("detectParking" ,"car: " + rect);
-
         List<RectF> results = new ArrayList<RectF>();
         List<RectF> res=new ArrayList<>();
         int widthThresHold = width / 2;
