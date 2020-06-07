@@ -116,13 +116,13 @@ public class sendLocation extends Activity implements LocationListener {
 
                                 for (DocumentChange dc : snapshots.getDocumentChanges()) {
 
-                                        Log.d(TAG, "New city: " + dc.getDocument().toString());
+                                    Log.d(TAG, "New city: " + dc.getDocument().toString());
 
                                 }
                             }
                         });
 
-        }});
+            }});
     }
     private void requestLocationUpdates() {
         LocationRequest request = new LocationRequest();

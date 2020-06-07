@@ -29,4 +29,5 @@ public class MainActivity extends AppCompatActivity {
 
     public void signUpInHandler(View v) { startActivity(new Intent(this, RegistrationActivity.class)); }
 
+
 }
