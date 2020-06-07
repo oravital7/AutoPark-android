@@ -44,6 +44,8 @@ import com.example.autopark.algs.objectDetector.env.Logger;
 import com.example.autopark.algs.objectDetector.tracking.MultiBoxTracker;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -115,7 +117,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
-
+  private ParkingDBUpdater parkDB = new ParkingDBUpdater(this);
   private boolean computingDetection = false;
 
   private long timestamp = 0;
@@ -356,6 +358,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             int id = 111;
             for (RectF location : freeParks) {
+              try {
+                parkDB.addParking(location);
+              } catch (JSONException e) {
+                e.printStackTrace();
+              }
               Log.d("Detector" ,"Parking location1: " + location);
               Classifier.Recognition res = new Classifier.Recognition("" + id++, "park", 1.0f, location);
                 canvas.drawRect(location, paint);
