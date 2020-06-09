@@ -7,17 +7,17 @@
     tools:context=".sendLocation">
 
     <Button
-        android:id="@+id/b_sendLoc"
+        android:id="@+id/request_location_update_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send location"
+        android:text="update location"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/get_data"
+        android:id="@+id/remove_location_update_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="152dp"
@@ -25,8 +25,8 @@
         android:layout_marginTop="45dp"
         android:layout_marginEnd="171dp"
         android:layout_marginRight="171dp"
-        android:text="All parking"
+        android:text="Remove update"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/b_sendLoc"/>
+        app:layout_constraintTop_toBottomOf="@+id/request_location_update_button" />
 </androidx.constraintlayout.widget.ConstraintLayout>
