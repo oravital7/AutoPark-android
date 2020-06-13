@@ -115,7 +115,7 @@ public class MapsActivity extends AppCompatActivity
         mSearchView = findViewById(R.id.location);
         mFstore = FirebaseFirestore.getInstance();
         mParking = new ArrayList<>();
-        mGeocoders = new Geocoder(MapsActivity.this);
+        mGeocoders = new Geocoder(MapsActivity.this ,Locale.ENGLISH);
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
 
@@ -170,7 +170,6 @@ public class MapsActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
-
         // Prompt the user for permission.
         getLocationPermission();
 
@@ -181,10 +180,6 @@ public class MapsActivity extends AppCompatActivity
         getDeviceLocation();
 
         requestLocationUpdates();
-
-
-
-
 
         searchView();
 
@@ -230,6 +225,8 @@ public class MapsActivity extends AppCompatActivity
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(mLastKnownLocation.getLatitude(),
                                                 mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                                startDb();
+
 
                             }
                             else {
@@ -239,31 +236,30 @@ public class MapsActivity extends AppCompatActivity
                             mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
                             }
-
                         }
                     }
-
                 });
-        startDb();
+
 
     }
     private void requestLocationUpdates() {
+        Log.d("Currnet_Location", "location update ");
         LocationRequest request = new LocationRequest();
-        request.setInterval(10000);
-        request.setFastestInterval(5000);
+        request.setInterval(4000);
+        request.setFastestInterval(2000);
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(this);
-        int permission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permission == PackageManager.PERMISSION_GRANTED) {
+        if (mLocationPermissionGranted) {
+            Log.d("Currnet_Location", "ok location update ");
+
             // Request location updates and when an update is
             // received, store the location in Firebase
-            client.requestLocationUpdates(request, new LocationCallback() {
+            mFusedLocationProviderClient.requestLocationUpdates(request, new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
                     Location location = locationResult.getLastLocation();
                     if (location != null) {
-                        Log.d("sendl", "location update " + location);
+                        mMap.setMyLocationEnabled(true);
+                        Log.d("Currnet_Location", "location update " + location);
                         mLastKnownLocation = location;
                         GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude());
                         startDb();
@@ -322,10 +318,12 @@ public class MapsActivity extends AppCompatActivity
      */
     private void updateLocationUI() {
         if (mMap == null) {
+            Log.e("mMap_Null", "mMap is null");
             return;
         }
         try {
             if (mLocationPermissionGranted) {
+                Log.e("mMap_Null", "mMap is ok");
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(true);
             } else {
