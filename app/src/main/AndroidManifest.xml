@@ -28,6 +28,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".location.Parking_updater"
+            android:exported="true" />
+        <activity
             android:name=".sendLocation"
             android:exported="true" />
         <activity android:name=".login.RegistrationActivity" />
