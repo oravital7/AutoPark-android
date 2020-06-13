@@ -13,6 +13,7 @@ import android.widget.VideoView;
 
 import com.example.autopark.MainMenu;
 import com.example.autopark.R;
+import com.example.autopark.algs.objectDetector.DetectorActivity;
 import com.example.autopark.utils.ValidationData;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -25,7 +26,8 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+//        setContentView(R.layout.activity_main_menu);
+        startActivity(new Intent(this, DetectorActivity.class));
     }
 
     public void signInHandler(View v) {

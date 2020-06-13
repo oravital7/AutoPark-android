@@ -26,16 +26,19 @@ import javax.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 
 public class Parking_updater extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private Location location;
     //private TextView locationTv;
+    private ConstraintLayout lay;
+
     private GoogleApiClient googleApiClient;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private LocationRequest locationRequest;
-    private static final long UPDATE_INTERVAL = 2000, FASTEST_INTERVAL = 2000; // = 5 seconds
+    private static final long UPDATE_INTERVAL = 20000, FASTEST_INTERVAL = 20000; // = 5 seconds
     // lists for permissions
     private ArrayList<String> permissionsToRequest;
     private ArrayList<String> permissionsRejected = new ArrayList<>();
@@ -48,8 +51,9 @@ public class Parking_updater extends AppCompatActivity implements GoogleApiClien
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_parking_updater);
-        db_parkingUpdater = new DB_ParkingUpdater();
+       setContentView(R.layout.activity_send_location);
+        db_parkingUpdater = new DB_ParkingUpdater(this);
+        lay=(ConstraintLayout)(findViewById(R.id.con)) ;
 //        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 //        fusedLocationClient.getLastLocation()
 //                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -200,10 +204,10 @@ public class Parking_updater extends AppCompatActivity implements GoogleApiClien
             //locationTv.setText("Latitude : " + location.getLatitude() + "\nLongitude : " + location.getLongitude());
             if(isParking(location))
             {
+
                 Log.d("parked","parked");
-                Parking takenPark = db_parkingUpdater.checkIfParkingIsTaken(location, this);
-                if(takenPark !=null)
-                    Log.d("tag", "takenPark "+takenPark.getGeom());
+                db_parkingUpdater.checkIfParkingIsTaken(location, this);
+
             }
             LastKnownLocation=location;
 
@@ -212,7 +216,8 @@ public class Parking_updater extends AppCompatActivity implements GoogleApiClien
     }
 
     public boolean isParking(Location currentLocation)
-    {   double venueLat =LastKnownLocation.getLatitude();
+    {
+        double venueLat =LastKnownLocation.getLatitude();
         double venueLng =LastKnownLocation.getLongitude();
 
         double latDistance = Math.toRadians(currentLocation.getLatitude() - venueLat);

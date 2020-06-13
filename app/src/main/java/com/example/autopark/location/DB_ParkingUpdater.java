@@ -6,6 +6,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.util.Log;
 
+import com.example.autopark.R;
 import com.example.autopark.model.Parking;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -13,23 +14,29 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class DB_ParkingUpdater {
     private FirebaseFirestore mFstore;
 //    private Location parkingLocation;
     private String TAG = "dbUpdater";
-    public DB_ParkingUpdater()
+    private ConstraintLayout layout;
+    private Parking_updater activity;
+    public DB_ParkingUpdater(Parking_updater p)
     {
+        activity=p;
         mFstore = FirebaseFirestore.getInstance();
         //this.parkingLocation=parkingLocation;
     }
 
-    public Parking checkIfParkingIsTaken(final Location parkingLocation, Context context)
+    public void checkIfParkingIsTaken(final Location parkingLocation, final Context context)
     {
+        layout=activity.findViewById(R.id.con);
         final Parking[] foundPark = {null};
         List<Address> addressList = null;
         //Locale locale = new Locale("he", "IL");
@@ -78,8 +85,13 @@ public class DB_ParkingUpdater {
 
                                 if(isParking(parkingLocation,mParkLoc))
                                 {
-                                    Log.d("cityinit", "mpark found"+foundPark[0].getGeom());
-                                    foundPark[0] = mPark;
+                                    Log.d("cityinit", "mpark found");
+                                    popUp popUpClass = new popUp(mPark,context);
+                                    try {
+                                        popUpClass.showPopupWindow(layout);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                     break;
                                 }
                             }
@@ -90,9 +102,7 @@ public class DB_ParkingUpdater {
                 });
 
     }
-        //mFstore.waitForPendingWrites();
-        Log.d("cityinit", "return found"+foundPark[0].getGeom());
-        return foundPark[0];
+
     }
 
     public boolean isParking(Location currentLocation, Location DBParkingLocation)

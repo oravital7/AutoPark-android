@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".sendLocation">
+    tools:context=".sendLocation"
+    android:id="@+id/con">
 
     <Button
         android:id="@+id/request_location_update_button"

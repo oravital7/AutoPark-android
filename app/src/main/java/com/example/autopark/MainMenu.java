@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import com.example.autopark.location.Parking_updater;
 import com.example.autopark.map.MapsActivity;
 import com.example.autopark.algs.objectDetector.DetectorActivity;
+import com.example.autopark.model.Parking;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class MainMenu extends AppCompatActivity {
@@ -16,6 +18,7 @@ public class MainMenu extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+        Parking_updater p=new Parking_updater();
     }
 
     public void mapHandlerBtn(View v) {
