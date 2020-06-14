@@ -71,7 +71,7 @@ public class popUp {
        TextView popUpText = popupView.findViewById(R.id.textPopup);
 
         Geocoder geocoders = new Geocoder(context , Locale.ENGLISH);
-        popUpText.setText("do you intent to park in "+getAddressName(myPark.getGeom(),geocoders));
+        popUpText.setText("do you park in "+getAddressName(myPark.getGeom(),geocoders));
 //
        Button noB = popupView.findViewById(R.id.noBpark);
         noB.setOnClickListener(new View.OnClickListener() {
