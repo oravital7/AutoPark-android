@@ -26,8 +26,8 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_main_menu);
-        startActivity(new Intent(this, DetectorActivity.class));
+        setContentView(R.layout.activity_login);
+       // startActivity(new Intent(this, DetectorActivity.class));
     }
 
     public void signInHandler(View v) {

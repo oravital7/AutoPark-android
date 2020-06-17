@@ -18,7 +18,6 @@ public class MainMenu extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-        Parking_updater p=new Parking_updater();
     }
 
     public void mapHandlerBtn(View v) {

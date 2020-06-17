@@ -37,7 +37,7 @@ public class ParkingDBUpdater {
 
     static final String REQUEST_METHOD = "POST";
 
-    private long lastUpdate;
+    private long mLastUpdate;
 
     final String url = "http://176.228.53.84:3000/parks/add/"; // your URL
 
@@ -45,15 +45,16 @@ public class ParkingDBUpdater {
     private Geocoder mGeocoders;
     ParkingDBUpdater(Context context){
         this.context = context;
-        lastUpdate = 0;
+        mLastUpdate = 0;
 
     }
 
     public boolean addParking(RectF freePark) throws JSONException {
 
         Geocoder  Geocoders = new Geocoder(this.context, Locale.ENGLISH);
-        if (Calendar.getInstance().getTimeInMillis() - lastUpdate <= 2000)
+        if (Calendar.getInstance().getTimeInMillis() - mLastUpdate <= 2000)
             return false;
+
         GeoPoint geoPoint = new GeoPoint(32.07931,34.8055976);
         List<Address> addressListIntialize=new ArrayList<>();
         String Address = null;
@@ -89,6 +90,7 @@ public class ParkingDBUpdater {
                 }
         );
 
+        mLastUpdate = Calendar.getInstance().getTimeInMillis();
 // add it to the RequestQueue
         queue.add(lastFMAuthRequest);
         return true;
