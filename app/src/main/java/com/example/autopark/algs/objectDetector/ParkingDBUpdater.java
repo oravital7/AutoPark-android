@@ -50,20 +50,21 @@ public class ParkingDBUpdater {
     }
 
     public boolean addParking(Parking freePark) throws JSONException {
-
-
         Geocoder  Geocoders = new Geocoder(this.context, Locale.ENGLISH);
         if (Calendar.getInstance().getTimeInMillis() - mLastUpdate <= 2000)
             return false;
 
         GeoPoint geoPoint = freePark.getGeom();
         List<Address> addressListIntialize=new ArrayList<>();
-        String Address = null;
         try {
             addressListIntialize = Geocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        if (addressListIntialize.isEmpty())
+            return false;
+
         String city = addressListIntialize.get(0).getLocality();
         String country = addressListIntialize.get(0).getCountryName();
         JSONObject json = new JSONObject();
@@ -97,22 +98,4 @@ public class ParkingDBUpdater {
         queue.add(lastFMAuthRequest);
         return true;
     }
-
-    public String getAddressName(GeoPoint geoPoint) throws IOException {
-
-        List<Address> addressList = null;
-
-        try {
-            addressList = mGeocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        String address = "";
-
-        if (addressList != null && !addressList.isEmpty())
-            address = addressList.get(0).getAddressLine(0);
-
-        return address;
-    }
-
 }
