@@ -26,6 +26,7 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.location.Location;
 import android.media.Image;
 import android.media.Image.Plane;
 import android.media.ImageReader;
@@ -35,15 +36,30 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Trace;
+import android.util.Log;
 import android.util.Size;
 import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.example.autopark.R;
 import com.example.autopark.algs.objectDetector.env.ImageUtils;
 import com.example.autopark.algs.objectDetector.env.Logger;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.nio.ByteBuffer;
 
@@ -65,15 +81,26 @@ public abstract class CameraActivity extends Activity
   private byte[][] yuvBytes = new byte[3][];
   private int[] rgbBytes = null;
   private int yRowStride;
-
+  protected FusedLocationProviderClient mFusedLocationProviderClient;
+  protected Location mLastKnownLocation;
   protected int previewWidth = 0;
   protected int previewHeight = 0;
 
   private Runnable postInferenceCallback;
   private Runnable imageConverter;
+  protected  FirebaseUser mCurrentUser;
+  private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+  private boolean mLocationPermissionGranted;
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
+    mCurrentUser = FirebaseAuth.getInstance().getCurrentUser();
+    mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+    getLocationPermission();
+    if(mLocationPermissionGranted) {
+      getDeviceLocation();
+      requestLocationUpdates();
+    }
     LOGGER.d("onCreate " + this);
     super.onCreate(null);
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -84,6 +111,73 @@ public abstract class CameraActivity extends Activity
       setFragment();
     } else {
       requestPermission();
+    }
+  }
+
+  private void getLocationPermission() {
+    /*
+     * Request location permission, so that we can get the location of the
+     * device. The result of the permission request is handled by a callback,
+     * onRequestPermissionsResult.
+     */
+    if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+            android.Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED) {
+      mLocationPermissionGranted = true;
+    } else {
+      ActivityCompat.requestPermissions(this,
+              new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+              PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+    }
+  }
+
+  private void getDeviceLocation() {
+    /*
+     * Get the best and most recent location of the device, which may be null in rare
+     * cases when a location is not available.
+     */
+
+    mFusedLocationProviderClient.getLastLocation()
+            .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+              @Override
+              public void onSuccess(Location location) {
+                // Got last known location. In some rare situations this can be null.
+                if (location != null) {
+                  mLastKnownLocation = location;
+                  if (mLastKnownLocation != null) {
+                    Log.d("isLocation", mLastKnownLocation.toString());
+                  }
+                  else {
+                    Log.d("isLocation", "noLocationfind");
+
+                  }
+                }
+              }
+            });
+  }
+  private void requestLocationUpdates() {
+    Log.d("Currnet_Location", "location update ");
+    LocationRequest request = new LocationRequest();
+    request.setInterval(4000);
+    request.setFastestInterval(2000);
+    request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    if (mLocationPermissionGranted) {
+      Log.d("Currnet_Location", "ok location update ");
+
+      // Request location updates and when an update is
+      // received, store the location in Firebase
+      mFusedLocationProviderClient.requestLocationUpdates(request, new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+          Location location = locationResult.getLastLocation();
+          if (location != null) {
+            Log.d("Currnet_Location", "location update " + location);
+            mLastKnownLocation = location;
+            GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude());
+
+          }
+        }
+      }, null);
     }
   }
 

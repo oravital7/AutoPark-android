@@ -1,8 +1,14 @@
 package com.example.autopark.algs.objectDetector;
 
+import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
+
+import com.example.autopark.model.ParkingExt;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,19 +17,23 @@ import java.util.List;
 
 public class ParkingRecognition {
     int height, width;
+    private GeoPoint mGeoPoint;
+    private  FirebaseUser mCurrentUser;
 
-    public ParkingRecognition(int height, int width) {
+    public ParkingRecognition(int height, int width, GeoPoint geoPoint , FirebaseUser CurrentUser) {
+        mGeoPoint = geoPoint;
+        mCurrentUser = CurrentUser;
         this.height = 300;
         this.width = 300;
         Log.d("Detector", "h: " + this.height + ", w" + this.width);
     }
 
-    public List<RectF> detectParking(List<RectF> cars)
+    public List<ParkingExt> detectParking(List<RectF> cars)
     {
         Log.d("detectParking" ,"size: " + cars.size());
         for (RectF rect : cars)
             Log.d("detectParking" ,"car: " + rect);
-        List<RectF> results = new ArrayList<RectF>();
+        List<ParkingExt> results = new ArrayList<ParkingExt>();
         int widthThresHold = width / 2;
         for (int i = 0; i < cars.size(); i++)
         {
@@ -31,19 +41,24 @@ public class ParkingRecognition {
             for (int j = i + 1; j < cars.size(); j++)
             {
 //                "RectF(" + left + ", " + top + ", " + right + ", " + bottom + ")";
-                RectF tempPark = null;
+                RectF tempParkRect = null;
                 RectF park2 = cars.get(j);
                 if ((park.left <= widthThresHold && park2.left <= widthThresHold) || (park.right >= widthThresHold && park2.right >= widthThresHold))
-                    tempPark = calcParksDistance(park, park2);
+                    tempParkRect = calcParksDistance(park, park2);
                 // else
                 //    tempPark = calcParksDistance(park, park2);
 
-                if (tempPark != null)
-                    results.add(tempPark);
+                if (tempParkRect != null)
+                {
+                    results.add(addExtParkFromRect(tempParkRect));
+                }
             }
         }
-
         return results;
+    }
+
+    private ParkingExt addExtParkFromRect(RectF tempParkRect) {
+        return new ParkingExt(Timestamp.now() , mGeoPoint ,33 ,mCurrentUser.getUid(), tempParkRect);
     }
 
     private RectF calcParksDistance(RectF park, RectF park2)

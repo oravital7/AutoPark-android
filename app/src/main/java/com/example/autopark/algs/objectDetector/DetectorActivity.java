@@ -26,6 +26,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Build;
 import android.os.SystemClock;
@@ -42,7 +43,13 @@ import com.example.autopark.algs.objectDetector.env.BorderedText;
 import com.example.autopark.algs.objectDetector.env.ImageUtils;
 import com.example.autopark.algs.objectDetector.env.Logger;
 import com.example.autopark.algs.objectDetector.tracking.MultiBoxTracker;
+import com.example.autopark.model.ParkingExt;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 
 import org.json.JSONException;
 
@@ -62,6 +69,9 @@ import java.util.Vector;
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener {
   private static final Logger LOGGER = new Logger();
 
+
+
+
   // Configuration values for the prepackaged multibox model.
   private static final int MB_INPUT_SIZE = 224;
   private static final int MB_IMAGE_MEAN = 128;
@@ -72,7 +82,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private static final String MB_MODEL_FILE = "file:///android_asset/multibox_model.pb";
   private static final String MB_LOCATION_FILE =
       "file:///android_asset/multibox_location_priors.txt";
-
+  private ParkingRecognition mParkingRecognition;
   private static final int TF_OD_API_INPUT_SIZE = 300;
   private static final String TF_OD_API_MODEL_FILE =
       "file:///android_asset/ssd_mobilenet_v1_android_export.pb";
@@ -110,9 +120,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private static final float TEXT_SIZE_DIP = 10;
 
   private Integer sensorOrientation;
-
+  private GeoPoint mGeoPoint;
   private Classifier detector;
-
   private long lastProcessingTimeMs;
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
@@ -132,6 +141,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private BorderedText borderedText;
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+
+
 
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -308,21 +319,20 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             /****** ********/
             List<RectF> parks = new ArrayList<RectF>();
-
             for (Classifier.Recognition  result : results)
             {
               if (result.getTitle().equals("car") && result.getConfidence() > 0.3)
-                parks.add(result.getLocation());
-            }
+                parks.add((result.getLocation()));
 
-            ParkingRecognition parkingRecognition = new ParkingRecognition(DESIRED_PREVIEW_SIZE.getHeight(), DESIRED_PREVIEW_SIZE.getWidth());
-            List<RectF> freeParks = parkingRecognition.detectParking(parks);
-            for (RectF rect : freeParks)
-              Log.d("Detector" ,"Parking location: " + rect);
+            }
+            mGeoPoint = new GeoPoint(mLastKnownLocation.getLatitude() ,mLastKnownLocation.getLongitude());
+
+           mParkingRecognition = new ParkingRecognition(DESIRED_PREVIEW_SIZE.getHeight(), DESIRED_PREVIEW_SIZE.getWidth() , mGeoPoint , mCurrentUser);
+            List<ParkingExt> freeParks = mParkingRecognition.detectParking(parks);
+            for (ParkingExt rect : freeParks)
+              Log.d("Detector" ,"Parking location: " + rect.getmRectF());
 
             /****** ********/
-
-
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
             final Canvas canvas = new Canvas(cropCopyBitmap);
@@ -353,16 +363,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                   cropToFrameTransform.mapRect(location);
                   result.setLocation(location);
                   mappedRecognitions.add(result);
+
               }
             }
-
             int id = 111;
-            for (RectF location : freeParks) {
+            for (ParkingExt parkingExt : freeParks) {
               try {
-                parkDB.addParking(location);
+                parkDB.addParking(parkingExt);
               } catch (JSONException e) {
                 e.printStackTrace();
               }
+              RectF location = parkingExt.getmRectF();
               Log.d("Detector" ,"Parking location1: " + location);
               Classifier.Recognition res = new Classifier.Recognition("" + id++, "park", 1.0f, location);
                 canvas.drawRect(location, paint);
@@ -370,7 +381,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 res.setLocation(location);
                 mappedRecognitions.add(res);
             }
-
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
             trackingOverlay.postInvalidate();
 

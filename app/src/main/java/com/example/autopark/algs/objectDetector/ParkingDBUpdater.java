@@ -14,6 +14,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 
 import com.android.volley.toolbox.Volley;
+import com.example.autopark.model.Parking;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 
@@ -46,16 +47,16 @@ public class ParkingDBUpdater {
     ParkingDBUpdater(Context context){
         this.context = context;
         mLastUpdate = 0;
-
     }
 
-    public boolean addParking(RectF freePark) throws JSONException {
+    public boolean addParking(Parking freePark) throws JSONException {
+
 
         Geocoder  Geocoders = new Geocoder(this.context, Locale.ENGLISH);
         if (Calendar.getInstance().getTimeInMillis() - mLastUpdate <= 2000)
             return false;
 
-        GeoPoint geoPoint = new GeoPoint(32.07931,34.8055976);
+        GeoPoint geoPoint = freePark.getGeom();
         List<Address> addressListIntialize=new ArrayList<>();
         String Address = null;
         try {
@@ -68,6 +69,7 @@ public class ParkingDBUpdater {
         JSONObject json = new JSONObject();
         json.put("city" , city);
         json.put("country" , country);
+        json.put("userId" , freePark.getID());
         JSONObject Geom = new JSONObject();
         Geom.put("_latitude", geoPoint.getLatitude());
         Geom.put("_longitude", geoPoint.getLongitude());

@@ -85,7 +85,6 @@ public class MapsActivity extends AppCompatActivity
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
-    private Location mLocation;
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
@@ -239,8 +238,6 @@ public class MapsActivity extends AppCompatActivity
                         }
                     }
                 });
-
-
     }
     private void requestLocationUpdates() {
         Log.d("Currnet_Location", "location update ");
@@ -262,7 +259,7 @@ public class MapsActivity extends AppCompatActivity
                         Log.d("Currnet_Location", "location update " + location);
                         mLastKnownLocation = location;
                         GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude());
-                        startDb();
+
                     }
                 }
             }, null);
