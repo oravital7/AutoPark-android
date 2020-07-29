@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.autopark">
+
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -26,8 +27,13 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+
+
+        <activity
+            android:name=".locationUpdater.locationUpdaterActivity"
+            android:exported="true"/>
         <activity
             android:name=".location.Parking_updater"
             android:exported="true" />
@@ -71,6 +77,10 @@
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="location" />
+
+        <receiver
+            android:name=".locationUpdater.MyLocationService"
+            />
     </application>
 
 </manifest>

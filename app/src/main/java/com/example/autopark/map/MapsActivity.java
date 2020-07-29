@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.SearchView;
 
 import com.example.autopark.R;
+import com.example.autopark.locationUpdater.parkingDialog;
 import com.example.autopark.model.Parking;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -53,6 +54,8 @@ import androidx.core.content.ContextCompat;
 public class MapsActivity extends AppCompatActivity
         implements OnMapReadyCallback {
     private static final String TAG = "tsst";
+    public static boolean isParking= false;
+
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
     private SearchView mSearchView;
@@ -64,6 +67,9 @@ public class MapsActivity extends AppCompatActivity
     private HashMap<String, Marker> hashMapMarker = new HashMap<>();
     List<Marker> mMarkersSearch = new ArrayList<Marker>();
 
+    ///*** location updates *****///
+    private int counter;
+    private Location mLastKnownLocationOfParking;
 
     // The entry point to the Places API.
 //    private PlacesClient mPlacesClient;
@@ -183,12 +189,18 @@ public class MapsActivity extends AppCompatActivity
                 getDeviceLocation();
             }
         });
+        if(isParking!=true)
+        {
+            mSendLocation.setVisibility(View.GONE);
+        }
         mSendLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(mLastKnownLocation != null){
                     GeoPoint geoPoint = new GeoPoint(mLastKnownLocation.getLatitude() , mLastKnownLocation.getLongitude());
                     addParking(geoPoint);
+                    mSendLocation.setVisibility(View.GONE);
+                    isParking = false;
 
                 }
             }
@@ -241,6 +253,8 @@ public class MapsActivity extends AppCompatActivity
         request.setFastestInterval(2000);
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         if (mLocationPermissionGranted) {
+
+
             Log.d("Currnet_Location", "ok location update ");
 
             // Request location updates and when an update is
@@ -248,6 +262,12 @@ public class MapsActivity extends AppCompatActivity
             mFusedLocationProviderClient.requestLocationUpdates(request, new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
+                    if(isParking==true)
+                    {
+                        mSendLocation.setVisibility(View.VISIBLE);
+                        //change icon to parking taken
+
+                    }
                     Location location = locationResult.getLastLocation();
                     if (location != null) {
                         mMap.setMyLocationEnabled(true);
@@ -255,12 +275,37 @@ public class MapsActivity extends AppCompatActivity
                         mLastKnownLocation = location;
                         GeoPoint geoPoint = new GeoPoint(location.getLatitude() , location.getLongitude());
 
+                        //***checks if user is parking****//
+                        if(counter == 0 )
+                        {
+                            mLastKnownLocationOfParking = mLastKnownLocation;
+                        }
+                        counter++;
+                        if(counter == 10)
+                        {
+                            counter=0;
+                            if(!isParking && mLastKnownLocationOfParking.getLatitude() ==location.getLatitude() && mLastKnownLocationOfParking.getLongitude() == location.getLongitude())
+                            {
+                                Log.d("Currnet_Location", "Are you parking, man?");
+                                openDialog();
+                            }
+                        }
+
                     }
                 }
             }, null);
-        }
-    }
 
+        }
+
+    }
+    public void openDialog()
+    {
+        Log.d("Currnet_Location", "opening dialog");
+        parkingDialog mparkingDialog = new parkingDialog();
+        mparkingDialog.show(getSupportFragmentManager(),"example dialog");
+
+
+    }
 
 
     /**
