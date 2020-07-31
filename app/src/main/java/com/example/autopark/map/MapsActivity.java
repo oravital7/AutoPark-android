@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.SearchView;
 
 import com.example.autopark.R;
+import com.example.autopark.algs.objectDetector.ParkingDBUpdater;
 import com.example.autopark.locationUpdater.parkingDialog;
 import com.example.autopark.model.Parking;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -38,6 +39,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,7 +73,8 @@ public class MapsActivity extends AppCompatActivity
     ///*** location updates *****///
     private int counter;
     private Location mLastKnownLocationOfParking;
-
+    private ParkingDBUpdater parkDBchecker = new ParkingDBUpdater(this);
+    String parkingID;
     // The entry point to the Places API.
 //    private PlacesClient mPlacesClient;
 
@@ -189,7 +193,7 @@ public class MapsActivity extends AppCompatActivity
                 getDeviceLocation();
             }
         });
-        if(isParking!=true)
+        if(!isParking)
         {
             mSendLocation.setVisibility(View.GONE);
         }
@@ -284,11 +288,16 @@ public class MapsActivity extends AppCompatActivity
                         if(counter == 10)
                         {
                             counter=0;
-                            if(!isParking && mLastKnownLocationOfParking.getLatitude() ==location.getLatitude() && mLastKnownLocationOfParking.getLongitude() == location.getLongitude())
-                            {
-                                Log.d("Currnet_Location", "Are you parking, man?");
-                                openDialog();
+                            //check if a parking is available
+                            try {
+                                parkDBchecker.checkIfParkingExist(MapsActivity.this, geoPoint, location);
+
+                                Log.d("Currnet_Location", "parkingID "+ parkingID);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
+
+
                         }
 
                     }
@@ -298,13 +307,15 @@ public class MapsActivity extends AppCompatActivity
         }
 
     }
-    public void openDialog()
-    {
-        Log.d("Currnet_Location", "opening dialog");
-        parkingDialog mparkingDialog = new parkingDialog();
-        mparkingDialog.show(getSupportFragmentManager(),"example dialog");
-
-
+    public void openDialog(Location location, String parkID)
+    {Log.d("Currnet_Location", "checking validity");
+        if(!isParking && mLastKnownLocationOfParking.getLatitude() ==location.getLatitude() && mLastKnownLocationOfParking.getLongitude() == location.getLongitude())
+        {
+            Log.d("Currnet_Location", "Are you parking, man?");
+            Log.d("Currnet_Location", "opening dialog");
+            parkingDialog mparkingDialog = new parkingDialog(parkID, this, mLastKnownLocationOfParking);
+            mparkingDialog.show(getSupportFragmentManager(),"example dialog");
+        }
     }
 
 
