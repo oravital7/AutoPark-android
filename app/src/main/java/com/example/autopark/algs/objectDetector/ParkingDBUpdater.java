@@ -53,7 +53,7 @@ public class ParkingDBUpdater {
         mLastUpdate = 0;
     }
 
-    private JSONObject jsonBuilder (GeoPoint userlocation,String ParkID,Bitmap image,PointF centerPoint, float park_size) throws JSONException {
+    private JSONObject jsonBuilder (GeoPoint userlocation,String ParkID,Bitmap image,PointF centerPoint, float park_size_percentage) throws JSONException {
         Geocoder  Geocoders = new Geocoder(this.context, Locale.ENGLISH);
         if (Calendar.getInstance().getTimeInMillis() - mLastUpdate <= 2000)
             return null;
@@ -100,10 +100,10 @@ public class ParkingDBUpdater {
             centerP.put("y", centerPoint.y);
             json.accumulate("centerP" , centerP);
         }
-        if(park_size!=0 && image!=null)
+        if(park_size_percentage!=0 && image!=null)
         {
-            park_size = park_size / image.getHeight();
-            json.put("size" , park_size);
+            park_size_percentage = park_size / image.getHeight();
+            json.put("size_percentage" , park_size_percentage);
         }
         return json;
     }
