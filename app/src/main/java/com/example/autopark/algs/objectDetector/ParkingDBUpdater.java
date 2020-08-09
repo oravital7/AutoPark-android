@@ -103,7 +103,7 @@ public class ParkingDBUpdater {
         if(park_size_percentage!=0 && image!=null)
         {
             park_size_percentage = park_size_percentage / image.getHeight();
-            json.put("size_percentage" , park_size_percentage);
+            json.put("sizePercentage" , park_size_percentage);
         }
         return json;
     }
