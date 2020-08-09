@@ -53,7 +53,7 @@ public class ParkingDBUpdater {
         mLastUpdate = 0;
     }
 
-    private JSONObject jsonBuilder (GeoPoint userlocation,String ParkID,Bitmap image,PointF centerPoint) throws JSONException {
+    private JSONObject jsonBuilder (GeoPoint userlocation,String ParkID,Bitmap image,PointF centerPoint, float park_size) throws JSONException {
         Geocoder  Geocoders = new Geocoder(this.context, Locale.ENGLISH);
         if (Calendar.getInstance().getTimeInMillis() - mLastUpdate <= 2000)
             return null;
@@ -100,6 +100,11 @@ public class ParkingDBUpdater {
             centerP.put("y", centerPoint.y);
             json.accumulate("centerP" , centerP);
         }
+        if(park_size!=0 && image!=null)
+        {
+            park_size = park_size / image.getHeight();
+            json.put("size" , park_size);
+        }
         return json;
     }
     public void checkIfParkingExist(final MapsActivity mapsActivity, GeoPoint userlocation, final Location location) throws JSONException
@@ -107,7 +112,7 @@ public class ParkingDBUpdater {
         Log.d("geom","got this geom: "+userlocation);
         url = "http://176.228.53.84:3000/parks/add/";
 
-        JSONObject json  =jsonBuilder(userlocation,mFirebaseUser.getUid(),Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888),new PointF(1,3));
+        JSONObject json  =jsonBuilder(userlocation,mFirebaseUser.getUid(),Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888),new PointF(1,3),0);
         if(json!=null) {
             RequestQueue queue = Volley.newRequestQueue(context);
             JsonObjectRequest lastFMAuthRequest = new JsonObjectRequest(Request.Method.POST, url, json,
@@ -145,11 +150,11 @@ public class ParkingDBUpdater {
         }
     }
 
-    public boolean addParking(Parking freePark,Bitmap image, PointF centerPoint) throws JSONException {
+    public boolean addParking(Parking freePark,Bitmap image, PointF centerPoint, float width) throws JSONException {
         url = "http://176.228.53.84:3000/parks/add/";
 
 
-        JSONObject json = jsonBuilder(freePark.getGeom(), freePark.getID(), image, centerPoint);
+        JSONObject json = jsonBuilder(freePark.getGeom(), freePark.getID(), image, centerPoint, width);
         if (json != null) {
             RequestQueue queue = Volley.newRequestQueue(context);
             JsonObjectRequest lastFMAuthRequest = new JsonObjectRequest(Request.Method.POST, url, json,
