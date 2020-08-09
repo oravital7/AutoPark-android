@@ -60,6 +60,7 @@ public class ParkingDBUpdater {
 
         GeoPoint geoPoint = userlocation;
 
+
         List<Address> addressListIntialize=new ArrayList<>();
         try {
             addressListIntialize = Geocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
@@ -69,6 +70,7 @@ public class ParkingDBUpdater {
 
         if (addressListIntialize.isEmpty())
             return null;
+
 
         String city = addressListIntialize.get(0).getLocality();
 
