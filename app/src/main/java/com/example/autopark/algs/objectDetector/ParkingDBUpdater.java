@@ -110,64 +110,76 @@ public class ParkingDBUpdater {
         url = "http://176.228.53.84:3000/parks/add/";
 
         JSONObject json  =jsonBuilder(userlocation,mFirebaseUser.getUid(),Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888),new PointF(1,3));
-        RequestQueue queue = Volley.newRequestQueue(context);
-        JsonObjectRequest lastFMAuthRequest = new JsonObjectRequest (Request.Method.POST, url,json ,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
+        if(json!=null) {
+            RequestQueue queue = Volley.newRequestQueue(context);
+            JsonObjectRequest lastFMAuthRequest = new JsonObjectRequest(Request.Method.POST, url, json,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
 
-                        try {
-                            final String ParkingId = response.getString("id");
-                            if(ParkingId!=null) {
-                                mapsActivity.openDialog(location, ParkingId);
+                            try {
+                                final String ParkingId = response.getString("id");
+                                if (ParkingId != null) {
+                                    mapsActivity.openDialog(location, ParkingId);
+                                }
+                                Log.d("parlingID", ParkingId);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                            Log.d("parlingID", ParkingId);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+
                         }
-
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d("Error.Response", error.toString());
+                        }
                     }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("Error.Response", error.toString());
-                    }
-                }
-        );
+            );
 
-        mLastUpdate = Calendar.getInstance().getTimeInMillis();
-        queue.add(lastFMAuthRequest);
+            mLastUpdate = Calendar.getInstance().getTimeInMillis();
+            queue.add(lastFMAuthRequest);
 
-
+        }
+        else
+        {
+            Log.d("response", "address could not be found");
+        }
     }
 
     public boolean addParking(Parking freePark,Bitmap image, PointF centerPoint) throws JSONException {
         url = "http://176.228.53.84:3000/parks/add/";
 
 
-        JSONObject json  =jsonBuilder(freePark.getGeom(),freePark.getID(),image,centerPoint);
-        RequestQueue queue = Volley.newRequestQueue(context);
-        JsonObjectRequest lastFMAuthRequest = new JsonObjectRequest (Request.Method.POST, url,json ,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("response","response: "+response);
+        JSONObject json = jsonBuilder(freePark.getGeom(), freePark.getID(), image, centerPoint);
+        if (json != null) {
+            RequestQueue queue = Volley.newRequestQueue(context);
+            JsonObjectRequest lastFMAuthRequest = new JsonObjectRequest(Request.Method.POST, url, json,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            Log.d("response", "response: " + response);
 
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d("Error2.Response", error.toString());
+                        }
                     }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("Error2.Response", error.toString());
-                    }
-                }
-        );
+            );
 
-        mLastUpdate = Calendar.getInstance().getTimeInMillis();
+            mLastUpdate = Calendar.getInstance().getTimeInMillis();
 // add it to the RequestQueue
-        queue.add(lastFMAuthRequest);
-        return true;
+            queue.add(lastFMAuthRequest);
+            return true;
+        }
+            else {
+            Log.d("response", "address could not be found");
+                return false;
+            }
+
     }
 
 }
