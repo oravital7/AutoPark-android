@@ -1,10 +1,13 @@
 package com.example.autopark.algs.objectDetector;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.util.Base64;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -23,6 +26,7 @@ import com.google.firebase.firestore.GeoPoint;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,13 +53,13 @@ public class ParkingDBUpdater {
         mLastUpdate = 0;
     }
 
-    private JSONObject jsonBuilder (GeoPoint userlocation,String ParkID) throws JSONException {
+    private JSONObject jsonBuilder (GeoPoint userlocation,String ParkID,Bitmap image,PointF centerPoint) throws JSONException {
         Geocoder  Geocoders = new Geocoder(this.context, Locale.ENGLISH);
         if (Calendar.getInstance().getTimeInMillis() - mLastUpdate <= 2000)
             return null;
 
-        //GeoPoint geoPoint = freePark.getGeom();
         GeoPoint geoPoint = userlocation;
+
         List<Address> addressListIntialize=new ArrayList<>();
         try {
             addressListIntialize = Geocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
@@ -67,23 +71,43 @@ public class ParkingDBUpdater {
             return null;
 
         String city = addressListIntialize.get(0).getLocality();
+
         String country = addressListIntialize.get(0).getCountryName();
         JSONObject json = new JSONObject();
+
+
         json.put("city" , city);
         json.put("country" , country);
         json.put("userId" , ParkID);
         JSONObject Geom = new JSONObject();
+        Log.d("lat lon are:", geoPoint.toString());
         Geom.put("_latitude", geoPoint.getLatitude());
         Geom.put("_longitude", geoPoint.getLongitude());
         json.accumulate("Geom" , Geom);
+        if(image!=null)
+        {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] imageBytes = baos.toByteArray();
+            String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+            json.put("image",encodedImage);
+
+        }
+        if(centerPoint!=null)
+        {
+            JSONObject centerP = new JSONObject();
+            centerP.put("x", centerPoint.x);
+            centerP.put("y", centerPoint.y);
+            json.accumulate("centerP" , centerP);
+        }
         return json;
     }
     public void checkIfParkingExist(final MapsActivity mapsActivity, GeoPoint userlocation, final Location location) throws JSONException
     {
         Log.d("geom","got this geom: "+userlocation);
-        url = "http://176.228.53.84:3000/parks/check/";
+        url = "http://176.228.53.84:3000/parks/add/";
 
-        JSONObject json  =jsonBuilder(userlocation,mFirebaseUser.getUid());
+        JSONObject json  =jsonBuilder(userlocation,mFirebaseUser.getUid(),Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888),new PointF(1,3));
         RequestQueue queue = Volley.newRequestQueue(context);
         JsonObjectRequest lastFMAuthRequest = new JsonObjectRequest (Request.Method.POST, url,json ,
                 new Response.Listener<JSONObject>() {
@@ -116,9 +140,11 @@ public class ParkingDBUpdater {
 
     }
 
-    public boolean addParking(Parking freePark) throws JSONException {
+    public boolean addParking(Parking freePark,Bitmap image, PointF centerPoint) throws JSONException {
         url = "http://176.228.53.84:3000/parks/add/";
-        JSONObject json  =jsonBuilder(freePark.getGeom(),freePark.getID());
+
+
+        JSONObject json  =jsonBuilder(freePark.getGeom(),freePark.getID(),image,centerPoint);
         RequestQueue queue = Volley.newRequestQueue(context);
         JsonObjectRequest lastFMAuthRequest = new JsonObjectRequest (Request.Method.POST, url,json ,
                 new Response.Listener<JSONObject>() {
@@ -131,7 +157,7 @@ public class ParkingDBUpdater {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("Error.Response", error.toString());
+                        Log.d("Error2.Response", error.toString());
                     }
                 }
         );
@@ -141,4 +167,5 @@ public class ParkingDBUpdater {
         queue.add(lastFMAuthRequest);
         return true;
     }
+
 }

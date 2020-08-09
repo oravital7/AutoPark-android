@@ -24,6 +24,8 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.location.Location;
@@ -127,6 +129,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
   private ParkingDBUpdater parkDB = new ParkingDBUpdater(this);
+
   private boolean computingDetection = false;
 
   private long timestamp = 0;
@@ -369,7 +372,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             int id = 111;
             for (ParkingExt parkingExt : freeParks) {
               try {
-                parkDB.addParking(parkingExt);
+                PointF centerPoint = new PointF(parkingExt.getmRectF().centerX(),parkingExt.getmRectF().centerY());
+                parkDB.addParking(parkingExt,cropCopyBitmap,centerPoint);
               } catch (JSONException e) {
                 e.printStackTrace();
               }
