@@ -373,7 +373,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             for (ParkingExt parkingExt : freeParks) {
               try {
                 PointF centerPoint = new PointF(parkingExt.getmRectF().centerX(),parkingExt.getmRectF().centerY());
-                parkDB.addParking(parkingExt,cropCopyBitmap,centerPoint);
+                float park_size = Math.max(parkingExt.getmRectF().width(), parkingExt.getmRectF().height());
+                parkDB.addParking(parkingExt,cropCopyBitmap,centerPoint,park_size);
               } catch (JSONException e) {
                 e.printStackTrace();
               }
