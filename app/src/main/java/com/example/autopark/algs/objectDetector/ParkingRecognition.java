@@ -58,7 +58,7 @@ public class ParkingRecognition {
     }
 
     private ParkingExt addExtParkFromRect(RectF tempParkRect) {
-        return new ParkingExt(Timestamp.now() , mGeoPoint ,33 ,mCurrentUser.getUid(), tempParkRect);
+        return new ParkingExt(Timestamp.now() , mGeoPoint ,33 ,mCurrentUser.getUid(), tempParkRect,"image");
     }
 
     private RectF calcParksDistance(RectF park, RectF park2)

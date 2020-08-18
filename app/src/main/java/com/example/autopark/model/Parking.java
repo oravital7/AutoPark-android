@@ -11,15 +11,17 @@ public class Parking {
     private GeoPoint Geom;
     private double size;
     private String ID;
+    private String image;
 
     public Parking(){
 
     }
-    public Parking(Timestamp date ,GeoPoint Geom , double size , String ID){
+    public Parking(Timestamp date ,GeoPoint Geom , double size , String ID , String image){
         this.date = date;
         this.Geom = Geom;
         this.size = size;
         this.ID = ID;
+        this.image = image;
     }
 
 
@@ -52,5 +54,7 @@ public class Parking {
     public void setID(String ID) {
         this.ID = ID;
     }
+
+    public String getImage(){return this.image;}
 
 }

@@ -60,7 +60,6 @@ public class ParkingDBUpdater {
 
         GeoPoint geoPoint = userlocation;
 
-
         List<Address> addressListIntialize=new ArrayList<>();
         try {
             addressListIntialize = Geocoders.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
@@ -76,7 +75,6 @@ public class ParkingDBUpdater {
 
         String country = addressListIntialize.get(0).getCountryName();
         JSONObject json = new JSONObject();
-
 
         json.put("city" , city);
         json.put("country" , country);
@@ -107,7 +105,8 @@ public class ParkingDBUpdater {
     public void checkIfParkingExist(final MapsActivity mapsActivity, GeoPoint userlocation, final Location location) throws JSONException
     {
         Log.d("geom","got this geom: "+userlocation);
-        url = "http://176.228.53.84:3000/parks/add/";
+        url = "http://176.228.53.84:3000/parks/check/";
+
 
         JSONObject json  =jsonBuilder(userlocation,mFirebaseUser.getUid(),Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888),new PointF(1,3));
         if(json!=null) {
@@ -148,7 +147,7 @@ public class ParkingDBUpdater {
     }
 
     public boolean addParking(Parking freePark,Bitmap image, PointF centerPoint) throws JSONException {
-        url = "http://176.228.53.84:3000/parks/add/";
+           url = "http://176.228.53.84:3000/parks/add/";
 
 
         JSONObject json = jsonBuilder(freePark.getGeom(), freePark.getID(), image, centerPoint);
