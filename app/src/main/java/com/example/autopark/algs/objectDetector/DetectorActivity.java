@@ -328,7 +328,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                 parks.add((result.getLocation()));
 
             }
-            mGeoPoint = new GeoPoint(mLastKnownLocation.getLatitude() ,mLastKnownLocation.getLongitude());
+           mGeoPoint = new GeoPoint(mLastKnownLocation.getLatitude() ,mLastKnownLocation.getLongitude());
 
            mParkingRecognition = new ParkingRecognition(DESIRED_PREVIEW_SIZE.getHeight(), DESIRED_PREVIEW_SIZE.getWidth() , mGeoPoint , mCurrentUser);
             List<ParkingExt> freeParks = mParkingRecognition.detectParking(parks);
@@ -366,7 +366,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                   cropToFrameTransform.mapRect(location);
                   result.setLocation(location);
                   mappedRecognitions.add(result);
-
               }
             }
             int id = 111;
@@ -388,7 +387,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             }
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
             trackingOverlay.postInvalidate();
-
             requestRender();
             computingDetection = false;
           }

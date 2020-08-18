@@ -521,12 +521,9 @@ public class MapsActivity extends AppCompatActivity
 //                                        BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.mipmap.marker);
 //                                        Bitmap b = bitmapdraw.getBitmap();
                                             Bitmap smallMarker = Bitmap.createScaledBitmap(decodedImage, width, height, false);
-                                             imageMarker = new BitmapDrawable(getResources(), smallMarker);
-
+                                            imageMarker = new BitmapDrawable(getResources(), smallMarker);
                                         }
-
                                         //
-
                                         Log.d("test", "mPark: " + mPark.getGeom());
                                         Boolean isExist = false;
                                         for (Parking park : mParking) {
@@ -547,8 +544,6 @@ public class MapsActivity extends AppCompatActivity
                                                 else
                                                 {
                                                     marker = mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID()));
-
-
                                                 }
                                                 Log.d("address", "new add on: " + getAddressName(mPark.getGeom()));
                                                 hashMapMarker.put(mPark.getID(), marker);

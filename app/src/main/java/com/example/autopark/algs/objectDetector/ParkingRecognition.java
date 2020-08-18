@@ -17,14 +17,15 @@ import java.util.List;
 
 public class ParkingRecognition {
     int height, width;
+    final double threshold = 0.05;
     private GeoPoint mGeoPoint;
     private  FirebaseUser mCurrentUser;
 
     public ParkingRecognition(int height, int width, GeoPoint geoPoint , FirebaseUser CurrentUser) {
         mGeoPoint = geoPoint;
         mCurrentUser = CurrentUser;
-        this.height = 300;
         this.width = 300;
+        this.height = 300;
         Log.d("Detector", "h: " + this.height + ", w" + this.width);
     }
 
@@ -82,6 +83,9 @@ public class ParkingRecognition {
             parkBottom = park2;
         }
 
+        if(parkTop.bottom >= parkBottom.top)
+            return null;
+
         double ac = Math.abs(pBottom.y - pTop.y);
         double cb = Math.abs(pBottom.x - pTop.x);
         double distance = Math.hypot(ac, cb);
@@ -90,11 +94,15 @@ public class ParkingRecognition {
 
         PointF pTopMiddle = new  PointF(parkTop.width() / 2 + parkTop.left, parkTop.bottom - parkTop.height() / 2);
         PointF pBottomMiddle = new  PointF(parkBottom.width() / 2 + parkBottom.left, parkBottom.bottom - parkBottom.height() / 2 );
-
+        double Car1 = parkTop.width() * parkTop.height();
+        double Car2 = parkBottom.width() * parkBottom.height();
+        Log.d("Carsize" , "car top" + Car1 + " , car bottom " + Car2 );
         Log.d("PrakingRecognition", "Distance [" + distance + "]" + "avgH [" + avgHeight + "]" + "res [" + distance / avgHeight + "]");
-        if (distance >= avgHeight)
-            return new RectF(pTopMiddle.x,pTopMiddle.y,pBottomMiddle.x,pBottomMiddle.y);
 
+        int frameResulotion = height * width;
+        if (distance >= avgHeight && (double)(parkTop.width() * parkTop.height())/frameResulotion > threshold
+        && (double)(parkBottom.width() * parkBottom.height())/frameResulotion > threshold)
+            return new RectF(pTopMiddle.x,pTopMiddle.y,pBottomMiddle.x,pBottomMiddle.y);
         return null;
     }
 
