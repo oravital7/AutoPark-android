@@ -22,6 +22,7 @@ import com.example.autopark.R;
 import com.example.autopark.algs.objectDetector.ParkingDBUpdater;
 import com.example.autopark.locationUpdater.parkingDialog;
 import com.example.autopark.model.Parking;
+import com.example.autopark.park.ParkingInfoWindowAdapter;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -180,6 +181,9 @@ public class MapsActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
+        if(mMap!=null)
+            mMap.setInfoWindowAdapter(new ParkingInfoWindowAdapter(MapsActivity.this));
+
         // Prompt the user for permission.
         getLocationPermission();
 
@@ -429,10 +433,21 @@ public class MapsActivity extends AppCompatActivity
                                         for (DocumentChange dc : snapshots.getDocumentChanges()) {
                                             DocumentSnapshot documentSnapshot = dc.getDocument();
                                             mPark = documentSnapshot.toObject(Parking.class);
+                                            Drawable imageMarker=null;
                                             if(mPark.getGeom() != null) {
+                                                if(mPark.getImage()!= null) {
+                                                    byte[] decodedString = Base64.decode(mPark.getImage(), Base64.DEFAULT);
+                                                    Bitmap decodedImage = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                                                    int height = 230;
+                                                    int width = 230;
+                                                    Bitmap smallMarker = Bitmap.createScaledBitmap(decodedImage, width, height, false);
+                                                    imageMarker = new BitmapDrawable(getResources(), smallMarker);
+                                                }
+
                                                 LatLng latLng = new LatLng(mPark.getGeom().getLatitude(), mPark.getGeom().getLongitude());
                                                 try {
-                                                    mMarkersSearch.add(mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID())));
+                                                        mMarkersSearch.add(mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom()))
+                                                                .snippet(mPark.getImage())));
                                                 } catch (IOException ex) {
                                                     ex.printStackTrace();
                                                 }
@@ -510,20 +525,6 @@ public class MapsActivity extends AppCompatActivity
                                         DocumentSnapshot documentSnapshot = dc.getDocument();
 
                                         mPark = documentSnapshot.toObject(Parking.class);
-                                        //decoded image:
-                                        Drawable imageMarker=null;
-                                        if(mPark.getImage()!=null) {
-
-                                            byte[] decodedString = Base64.decode(mPark.getImage(), Base64.DEFAULT);
-                                            Bitmap decodedImage = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                                            int height = 230;
-                                            int width = 230;
-//                                        BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.mipmap.marker);
-//                                        Bitmap b = bitmapdraw.getBitmap();
-                                            Bitmap smallMarker = Bitmap.createScaledBitmap(decodedImage, width, height, false);
-                                            imageMarker = new BitmapDrawable(getResources(), smallMarker);
-                                        }
-                                        //
                                         Log.d("test", "mPark: " + mPark.getGeom());
                                         Boolean isExist = false;
                                         for (Parking park : mParking) {
@@ -537,16 +538,12 @@ public class MapsActivity extends AppCompatActivity
                                             Log.d("test", "new add on: " + mPark.getGeom());
                                             mParking.add(mPark);
                                             LatLng latLng = new LatLng(mPark.getGeom().getLatitude(), mPark.getGeom().getLongitude());
+                                            Marker marker = null;
                                             try {
-                                                Marker marker=null;
-                                                if(imageMarker!=null)
-                                                   marker = mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID()).icon(BitmapDescriptorFactory.fromBitmap(((BitmapDrawable)imageMarker).getBitmap())));
-                                                else
-                                                {
-                                                    marker = mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID()));
-                                                }
-                                                Log.d("address", "new add on: " + getAddressName(mPark.getGeom()));
-                                                hashMapMarker.put(mPark.getID(), marker);
+                                                    marker = mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom()))
+                                                            .snippet(mPark.getImage()));
+                                                    Log.d("address", "new add on: " + getAddressName(mPark.getGeom()));
+                                                    hashMapMarker.put(mPark.getID(), marker);
                                                 //mMap.addMarker(new MarkerOptions().position(latLng).title(getAddressName(mPark.getGeom())).snippet("id :" + mPark.getID()));
 
                                             } catch (IOException e1) {

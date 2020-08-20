@@ -17,7 +17,7 @@ import java.util.List;
 
 public class ParkingRecognition {
     int height, width;
-    final double threshold = 0.05;
+    final double threshold = 0.01;
     private GeoPoint mGeoPoint;
     private  FirebaseUser mCurrentUser;
 
