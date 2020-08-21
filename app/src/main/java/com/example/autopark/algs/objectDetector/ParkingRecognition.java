@@ -83,12 +83,13 @@ public class ParkingRecognition {
             parkBottom = park2;
         }
 
-        if(parkTop.bottom >= parkBottom.top)
-            return null;
+//        if(parkTop.bottom >= parkBottom.top)
+//            return null;
 
         double ac = Math.abs(pBottom.y - pTop.y);
         double cb = Math.abs(pBottom.x - pTop.x);
         double distance = Math.hypot(ac, cb);
+
 
         double avgHeight = (park.height() + park2.height()) / 2;
 
@@ -100,9 +101,11 @@ public class ParkingRecognition {
         Log.d("PrakingRecognition", "Distance [" + distance + "]" + "avgH [" + avgHeight + "]" + "res [" + distance / avgHeight + "]");
 
         int frameResulotion = height * width;
-        if (distance >= avgHeight && (double)(parkTop.width() * parkTop.height())/frameResulotion > threshold
-        && (double)(parkBottom.width() * parkBottom.height())/frameResulotion > threshold)
+        if (distance >= avgHeight  /* && (double)(parkTop.width() * parkTop.height())/frameResulotion > threshold
+        && (double)(parkBottom.width() * parkBottom.height())/frameResulotion > threshold */)
             return new RectF(pTopMiddle.x,pTopMiddle.y,pBottomMiddle.x,pBottomMiddle.y);
+
+
         return null;
     }
 
