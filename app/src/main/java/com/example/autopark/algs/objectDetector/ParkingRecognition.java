@@ -45,7 +45,7 @@ public class ParkingRecognition {
 //                "RectF(" + left + ", " + top + ", " + right + ", " + bottom + ")";
                 RectF tempParkRect = null;
                 RectF park2 = cars.get(j);
-                if ((park.left <= widthThresHold && park2.left <= widthThresHold) || (park.right >= widthThresHold && park2.right >= widthThresHold))
+                if ((park.right <= widthThresHold && park2.right <= widthThresHold) || (park.left >= widthThresHold && park2.left >= widthThresHold))
                     tempParkRect = calcParksDistance(park, park2);
                 // else
                 //    tempPark = calcParksDistance(park, park2);
