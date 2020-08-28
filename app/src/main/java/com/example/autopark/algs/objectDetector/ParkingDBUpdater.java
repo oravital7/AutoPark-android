@@ -43,6 +43,7 @@ public class ParkingDBUpdater {
     static final String REQUEST_METHOD = "POST";
 
     private long mLastUpdate;
+    private long mLastUpdateAdd;
 
     String url;
     private Context context;
@@ -51,12 +52,12 @@ public class ParkingDBUpdater {
         mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         this.context = context;
         mLastUpdate = 0;
+        mLastUpdateAdd=0;
     }
 
     private JSONObject jsonBuilder (GeoPoint userlocation,String ParkID,Bitmap image,PointF centerPoint, float park_size_percentage) throws JSONException {
         Geocoder  Geocoders = new Geocoder(this.context, Locale.ENGLISH);
-        if (Calendar.getInstance().getTimeInMillis() - mLastUpdate <= 2000)
-            return null;
+
 
         GeoPoint geoPoint = userlocation;
 
@@ -111,7 +112,8 @@ public class ParkingDBUpdater {
     {
         Log.d("geom","got this geom: "+userlocation);
         url = "http://176.228.53.84:3000/parks/check/";
-
+        if (Calendar.getInstance().getTimeInMillis() - mLastUpdate <= 2000)
+            return;
 
         JSONObject json  =jsonBuilder(userlocation,mFirebaseUser.getUid(),Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888),new PointF(1,3),0);
         if(json!=null) {
@@ -147,7 +149,7 @@ public class ParkingDBUpdater {
         }
         else
         {
-            Log.d("response", "address could not be found");
+            Log.d("response", "address  could not be found");
         }
     }
 
@@ -155,7 +157,13 @@ public class ParkingDBUpdater {
     public boolean addParking(Parking freePark,Bitmap image, PointF centerPoint, float width) throws JSONException {
         url = "http://176.228.53.84:3000/parks/add/";
 
-
+        if (Calendar.getInstance().getTimeInMillis() - mLastUpdateAdd <= 2000) {
+            long thisTimerFalse = Calendar.getInstance().getTimeInMillis() - mLastUpdateAdd;
+            Log.d("TimerFalse" ," "+thisTimerFalse);
+            return false;
+        }
+        long thisTimerTrue = Calendar.getInstance().getTimeInMillis() - mLastUpdateAdd;
+        Log.d("TimerTrue" ," "+thisTimerTrue);
         JSONObject json = jsonBuilder(freePark.getGeom(), freePark.getID(), image, centerPoint, width);
         if (json != null) {
             RequestQueue queue = Volley.newRequestQueue(context);
@@ -175,7 +183,7 @@ public class ParkingDBUpdater {
                     }
             );
 
-            mLastUpdate = Calendar.getInstance().getTimeInMillis();
+            mLastUpdateAdd = Calendar.getInstance().getTimeInMillis();
 // add it to the RequestQueue
             queue.add(lastFMAuthRequest);
             return true;
