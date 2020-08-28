@@ -20,6 +20,7 @@ public class ParkingRecognition {
     final double threshold = 0.01;
     private GeoPoint mGeoPoint;
     private  FirebaseUser mCurrentUser;
+    private int middleOffset = 20;
 
     public ParkingRecognition(int height, int width, GeoPoint geoPoint , FirebaseUser CurrentUser) {
         mGeoPoint = geoPoint;
@@ -83,12 +84,18 @@ public class ParkingRecognition {
             parkBottom = park2;
         }
 
+<<<<<<< HEAD
       //  if(parkTop.bottom >= parkBottom.top)
           //  return null;
+=======
+//        if(parkTop.bottom >= parkBottom.top)
+//            return null;
+>>>>>>> 41db053269c4d52d07acd18860873e221504e030
 
         double ac = Math.abs(pBottom.y - pTop.y);
         double cb = Math.abs(pBottom.x - pTop.x);
         double distance = Math.hypot(ac, cb);
+
 
         double avgHeight = (park.height() + park2.height()) / 2;
 
@@ -100,9 +107,14 @@ public class ParkingRecognition {
         Log.d("PrakingRecognition", "Distance [" + distance + "]" + "avgH [" + avgHeight + "]" + "res [" + distance / avgHeight + "]");
 
         int frameResulotion = height * width;
-        if (distance >= avgHeight && (double)(parkTop.width() * parkTop.height())/frameResulotion > threshold
-        && (double)(parkBottom.width() * parkBottom.height())/frameResulotion > threshold)
-            return new RectF(pTopMiddle.x,pTopMiddle.y,pBottomMiddle.x,pBottomMiddle.y);
+        int middle = width / 2;
+        RectF parkResult = new RectF(pTopMiddle.x,pTopMiddle.y,pBottomMiddle.x,pBottomMiddle.y);
+        if (distance >= avgHeight && ((parkResult.left <= middle + middleOffset && parkResult.right <= middle + middleOffset) ||
+                parkResult.left >= middle - middleOffset && parkResult.right >= middle - middleOffset)  /* && (double)(parkTop.width() * parkTop.height())/frameResulotion > threshold
+        && (double)(parkBottom.width() * parkBottom.height())/frameResulotion > threshold */)
+            return parkResult;
+
+
         return null;
     }
 
