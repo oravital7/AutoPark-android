@@ -83,8 +83,8 @@ public class ParkingRecognition {
             parkBottom = park2;
         }
 
-        if(parkTop.bottom >= parkBottom.top)
-            return null;
+      //  if(parkTop.bottom >= parkBottom.top)
+          //  return null;
 
         double ac = Math.abs(pBottom.y - pTop.y);
         double cb = Math.abs(pBottom.x - pTop.x);
