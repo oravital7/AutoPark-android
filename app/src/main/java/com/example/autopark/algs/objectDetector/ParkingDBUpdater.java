@@ -44,8 +44,8 @@ public class ParkingDBUpdater {
 
     private long mLastUpdate;
     private long mLastUpdateAdd;
+    private long mLastUpdateOccupied;
 
-    String url;
     private Context context;
     private Geocoder mGeocoders;
     public ParkingDBUpdater(Context context){
@@ -53,6 +53,7 @@ public class ParkingDBUpdater {
         this.context = context;
         mLastUpdate = 0;
         mLastUpdateAdd=0;
+        mLastUpdateOccupied = 0;
     }
 
     private JSONObject jsonBuilder (GeoPoint userlocation,String ParkID,Bitmap image,PointF centerPoint, float park_size_percentage) throws JSONException {
@@ -92,8 +93,8 @@ public class ParkingDBUpdater {
             byte[] imageBytes = baos.toByteArray();
             String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
             json.put("image",encodedImage);
-
         }
+
         if(centerPoint!=null)
         {
             JSONObject centerP = new JSONObject();
@@ -111,11 +112,11 @@ public class ParkingDBUpdater {
     public void checkIfParkingExist(final MapsActivity mapsActivity, GeoPoint userlocation, final Location location) throws JSONException
     {
         Log.d("geom","got this geom: "+userlocation);
-        url = "http://176.228.53.84:3000/parks/check/";
+        String url = "http://176.228.53.84:3000/parks/check";
         if (Calendar.getInstance().getTimeInMillis() - mLastUpdate <= 2000)
             return;
 
-        JSONObject json  =jsonBuilder(userlocation,mFirebaseUser.getUid(),Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888),new PointF(1,3),0);
+        JSONObject json  =jsonBuilder(userlocation,mFirebaseUser.getUid(),null, null,0);
         if(json!=null) {
             RequestQueue queue = Volley.newRequestQueue(context);
             JsonObjectRequest lastFMAuthRequest = new JsonObjectRequest(Request.Method.POST, url, json,
@@ -155,7 +156,7 @@ public class ParkingDBUpdater {
 
 
     public boolean addParking(Parking freePark,Bitmap image, PointF centerPoint, float width) throws JSONException {
-        url = "http://176.228.53.84:3000/parks/add/";
+        String url = "http://176.228.53.84:3000/parks/add";
 
         if (Calendar.getInstance().getTimeInMillis() - mLastUpdateAdd <= 2000) {
             long thisTimerFalse = Calendar.getInstance().getTimeInMillis() - mLastUpdateAdd;
@@ -195,4 +196,39 @@ public class ParkingDBUpdater {
 
     }
 
+    public void parkOccupied(GeoPoint userlocation) {
+        String url = "http://176.228.53.84:3000/parks/remove";
+
+        long diffTime = Calendar.getInstance().getTimeInMillis() - mLastUpdateOccupied;
+        if (diffTime <= 2000)
+            return;
+
+        try {
+            JSONObject json = jsonBuilder(userlocation, mFirebaseUser.getUid(),null, null,0);
+            if (json!=null) {
+                RequestQueue queue = Volley.newRequestQueue(context);
+                JsonObjectRequest lastFMAuthRequest = new JsonObjectRequest(Request.Method.POST, url, json,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.d("Error.Response", error.toString());
+                            }
+                        }
+                );
+
+                mLastUpdateOccupied = Calendar.getInstance().getTimeInMillis();
+                queue.add(lastFMAuthRequest);
+            }
+        }
+        catch (JSONException e)
+        {
+            e.getStackTrace();
+        }
+
+    }
 }

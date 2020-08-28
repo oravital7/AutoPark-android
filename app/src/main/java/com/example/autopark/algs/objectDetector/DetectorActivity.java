@@ -324,16 +324,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             List<RectF> parks = new ArrayList<RectF>();
             for (Classifier.Recognition  result : results)
             {
-              if (result.getTitle().equals("car") && result.getConfidence() > 0.3)
-                parks.add((result.getLocation()));
-
+                if (result.getTitle().equals("car") && result.getConfidence() > 0.3)
+                    parks.add((result.getLocation()));
             }
-           mGeoPoint = new GeoPoint(mLastKnownLocation.getLatitude() ,mLastKnownLocation.getLongitude());
 
-           mParkingRecognition = new ParkingRecognition(DESIRED_PREVIEW_SIZE.getHeight(), DESIRED_PREVIEW_SIZE.getWidth() , mGeoPoint , mCurrentUser);
+            mGeoPoint = new GeoPoint(mLastKnownLocation.getLatitude() ,mLastKnownLocation.getLongitude());
+
+            mParkingRecognition = new ParkingRecognition(DESIRED_PREVIEW_SIZE.getHeight(), DESIRED_PREVIEW_SIZE.getWidth() , mGeoPoint , mCurrentUser);
             List<ParkingExt> freeParks = mParkingRecognition.detectParking(parks);
-            for (ParkingExt rect : freeParks)
-              Log.d("Detector" ,"Parking location: " + rect.getmRectF());
 
             /****** ********/
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
@@ -368,6 +366,23 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                   mappedRecognitions.add(result);
               }
             }
+
+            if (freeParks.isEmpty())
+            {
+                boolean isValid = false;
+                for (RectF car : parks)
+                {
+                    if (car.top >= 150 && car.left >= 150)
+                    {
+                      isValid = true;
+                      break;
+                    }
+                }
+
+                if (isValid)
+                  parkDB.parkOccupied(mGeoPoint);
+            }
+
             int id = 111;
             for (ParkingExt parkingExt : freeParks) {
               try {
@@ -380,10 +395,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               RectF location = parkingExt.getmRectF();
               Log.d("Detector" ,"Parking location1: " + location);
               Classifier.Recognition res = new Classifier.Recognition("" + id++, "park", 1.0f, location);
-                canvas.drawRect(location, paint);
-                cropToFrameTransform.mapRect(location);
-                res.setLocation(location);
-                mappedRecognitions.add(res);
+              canvas.drawRect(location, paint);
+              cropToFrameTransform.mapRect(location);
+              res.setLocation(location);
+              mappedRecognitions.add(res);
             }
             tracker.trackResults(mappedRecognitions, luminanceCopy, currTimestamp);
             trackingOverlay.postInvalidate();
