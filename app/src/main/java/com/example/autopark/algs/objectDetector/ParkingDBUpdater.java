@@ -149,7 +149,7 @@ public class ParkingDBUpdater {
         }
         else
         {
-            Log.d("response", "address could not be found");
+            Log.d("response", "address  could not be found");
         }
     }
 
