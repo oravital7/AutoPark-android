@@ -112,7 +112,7 @@ public class ParkingDBUpdater {
     public void checkIfParkingExist(final MapsActivity mapsActivity, GeoPoint userlocation, final Location location) throws JSONException
     {
         Log.d("geom","got this geom: "+userlocation);
-        String url = "http://176.228.53.84:3000/parks/check";
+        String url = "http://89.139.248.146:3000/parks/check";
         if (Calendar.getInstance().getTimeInMillis() - mLastUpdate <= 2000)
             return;
 
@@ -156,7 +156,7 @@ public class ParkingDBUpdater {
 
 
     public boolean addParking(Parking freePark,Bitmap image, PointF centerPoint, float width) throws JSONException {
-        String url = "http://176.228.53.84:3000/parks/add";
+        String url = "http://89.139.248.146:3000/parks/add";
 
         if (Calendar.getInstance().getTimeInMillis() - mLastUpdateAdd <= 2000) {
             long thisTimerFalse = Calendar.getInstance().getTimeInMillis() - mLastUpdateAdd;
@@ -197,7 +197,7 @@ public class ParkingDBUpdater {
     }
 
     public void parkOccupied(GeoPoint userlocation) {
-        String url = "http://176.228.53.84:3000/parks/remove";
+        String url = "http://89.139.248.146:3000/parks/remove";
 
         long diffTime = Calendar.getInstance().getTimeInMillis() - mLastUpdateOccupied;
         if (diffTime <= 2000)

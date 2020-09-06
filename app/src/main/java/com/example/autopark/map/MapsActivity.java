@@ -317,9 +317,11 @@ public class MapsActivity extends AppCompatActivity
         }
 
     }
+
     public void openDialog(Location location, String parkID)
-    {Log.d("Currnet_Location", "checking validity");
-        if(!isParking && mLastKnownLocationOfParking.getLatitude() ==location.getLatitude() && mLastKnownLocationOfParking.getLongitude() == location.getLongitude())
+    {
+        Log.d("Currnet_Location", "checking validity");
+        if(!isParking && calculateRadius(mLastKnownLocationOfParking, location))
         {
             Log.d("Currnet_Location", "Are you parking, man?");
             Log.d("Currnet_Location", "opening dialog");
@@ -357,15 +359,11 @@ public class MapsActivity extends AppCompatActivity
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         mLocationPermissionGranted = false;
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mLocationPermissionGranted = true;
-                }
-            }
+        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {// If request is cancelled, the result arrays are empty.
+                mLocationPermissionGranted = true;
         }
+
         updateLocationUI();
     }
 
@@ -391,7 +389,7 @@ public class MapsActivity extends AppCompatActivity
                 getLocationPermission();
             }
         } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
+            e.getStackTrace();
         }
 
     }
@@ -498,8 +496,6 @@ public class MapsActivity extends AppCompatActivity
 
 
             country = addressList.get(0).getCountryName();
-            Log.d("cityinit", city);
-            Log.d("cityinit", country);
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -560,13 +556,21 @@ public class MapsActivity extends AppCompatActivity
                                     case REMOVED:
                                         DocumentSnapshot documentSnapshot = dc.getDocument();
 
-                                        mPark = documentSnapshot.toObject(Parking.class);
-                                        Marker marker = hashMapMarker.get(mPark.getID());
+                                        try {
+                                            mPark = documentSnapshot.toObject(Parking.class);
+                                            Marker marker = hashMapMarker.get(mPark.getID());
 
-                                        marker.remove();
-                                        hashMapMarker.remove(mPark.getID());
-                                        Log.d("test", "Removed city: " + dc.getDocument().getData());
-                                        break;
+                                            if (marker != null)
+                                                marker.remove();
+
+                                            hashMapMarker.remove(mPark.getID());
+                                            Log.d("test", "Removed city: " + dc.getDocument().getData());
+                                            break;
+                                        }
+                                        catch (Exception e2)
+                                    {
+
+                                    }
                                 }
                             }
 
@@ -621,4 +625,9 @@ public class MapsActivity extends AppCompatActivity
 
     }
 
+    public boolean calculateRadius(Location locationA, Location locationB)
+    {
+        float dis = locationA.distanceTo(locationB);
+        return !(dis > 7000);
+    }
 }

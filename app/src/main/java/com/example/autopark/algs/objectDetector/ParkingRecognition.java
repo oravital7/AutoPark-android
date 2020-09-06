@@ -16,8 +16,8 @@ import java.util.List;
 
 
 public class ParkingRecognition {
-    int height, width;
-    final double threshold = 0.01;
+    private int height, width;
+    private final double threshold = 0.01;
     private GeoPoint mGeoPoint;
     private  FirebaseUser mCurrentUser;
     private int middleOffset = 20;
@@ -45,10 +45,8 @@ public class ParkingRecognition {
 //                "RectF(" + left + ", " + top + ", " + right + ", " + bottom + ")";
                 RectF tempParkRect = null;
                 RectF park2 = cars.get(j);
-                if ((park.right <= widthThresHold && park2.right <= widthThresHold) || (park.left >= widthThresHold && park2.left >= widthThresHold))
+                if ((park.right <= widthThresHold + middleOffset && park2.right <= widthThresHold + middleOffset) || (park.left >= widthThresHold - middleOffset && park2.left >= widthThresHold - middleOffset))
                     tempParkRect = calcParksDistance(park, park2);
-                // else
-                //    tempPark = calcParksDistance(park, park2);
 
                 if (tempParkRect != null)
                 {
@@ -102,32 +100,11 @@ public class ParkingRecognition {
         int middle = width / 2;
         RectF parkResult = new RectF(pTopMiddle.x,pTopMiddle.y,pBottomMiddle.x,pBottomMiddle.y);
         if (distance >= avgHeight && ((parkResult.left <= middle + middleOffset && parkResult.right <= middle + middleOffset) ||
-                parkResult.left >= middle - middleOffset && parkResult.right >= middle - middleOffset)  /* && (double)(parkTop.width() * parkTop.height())/frameResulotion > threshold
-        && (double)(parkBottom.width() * parkBottom.height())/frameResulotion > threshold */)
+                parkResult.left >= middle - middleOffset && parkResult.right >= middle - middleOffset)  && (double)(parkTop.width() * parkTop.height())/frameResulotion > threshold
+        && (double)(parkBottom.width() * parkBottom.height())/frameResulotion > threshold)
             return parkResult;
 
 
         return null;
-    }
-
-//    private List<RectF> getSideParks(List<RectF> parks, Side side)
-//    {
-//        List<RectF> results = new ArrayList<RectF>();
-//
-//        for (RectF park : parks)
-//        {
-//            if (side == Side.LEFT && park.right <= heightThresHold)
-//                results.add(park);
-//            else if (side == Side.RIGHT && park.left >= heightThresHold)
-//                results.add(park);
-//        }
-//
-//        return results;
-//    }
-
-    enum Side
-    {
-        RIGHT,
-        LEFT
     }
 }

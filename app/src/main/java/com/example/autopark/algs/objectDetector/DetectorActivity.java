@@ -324,7 +324,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             List<RectF> parks = new ArrayList<RectF>();
             for (Classifier.Recognition  result : results)
             {
-                if (result.getTitle().equals("car") && result.getConfidence() > 0.3)
+                if ((result.getTitle().equals("truck") || result.getTitle().equals("car")) && result.getConfidence() > 0.3)
                     parks.add((result.getLocation()));
             }
 
