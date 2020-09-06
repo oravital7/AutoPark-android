@@ -32,7 +32,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -321,7 +320,7 @@ public class MapsActivity extends AppCompatActivity
     public void openDialog(Location location, String parkID)
     {
         Log.d("Currnet_Location", "checking validity");
-        if(!isParking && calculateRadius(mLastKnownLocationOfParking, location))
+        if(!isParking && isInRange(mLastKnownLocationOfParking, location, 7000))
         {
             Log.d("Currnet_Location", "Are you parking, man?");
             Log.d("Currnet_Location", "opening dialog");
@@ -625,9 +624,9 @@ public class MapsActivity extends AppCompatActivity
 
     }
 
-    public boolean calculateRadius(Location locationA, Location locationB)
+    public boolean isInRange(Location locationA, Location locationB, double distance)
     {
         float dis = locationA.distanceTo(locationB);
-        return !(dis > 7000);
+        return !(dis > distance);
     }
 }
