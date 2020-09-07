@@ -9,8 +9,13 @@ Autopark shows the user a map with all of the available parking in his area, or 
 Users get real time updates, and whenever a new spot is found, it automatically appears on the map.  
 Autopark uses the information it collects from the users in order to update the database.  
 
+Parking detection exmaple:
 
 ![](https://media.giphy.com/media/ifSPoaOmlzfLAd0NZ2/giphy.gif)
+
+UML:
+
+![alt text](https://github.com/oravital7/AutoPark-android/blob/master/UML.PNG)
 
 
 Contributers: Or Avital, Or Abuhatzira, Ariel Bar And Dana Morhaim
