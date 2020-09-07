@@ -10,7 +10,7 @@ Users get real time updates, and whenever a new spot is found, it automatically 
 Autopark uses the information it collects from the users in order to update the database.  
 
 
-
+![](https://media.giphy.com/media/ifSPoaOmlzfLAd0NZ2/giphy.gif)
 
 
 Contributers: Or Avital, Or Abuhatzira, Ariel Bar And Dana Morhaim
