@@ -17,6 +17,6 @@ UML:
 
 ![alt text](https://github.com/oravital7/AutoPark-android/blob/master/UML.PNG)
 
-[Click here](https://www.youtube.com/watch?v=dG2Kt0LVhXg&feature=youtu.be)
+[Click here to learn more](https://www.youtube.com/watch?v=dG2Kt0LVhXg&feature=youtu.be)
 
 Contributers: Or Avital, Or Abuhatzira, Ariel Bar And Dana Morhaim
